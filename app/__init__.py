@@ -71,18 +71,20 @@ def create_app():
             username = data.get('username')
             name = data.get('name')
             email = data.get('email')
+            password = data.get('password', '')
 
 
             from app.service.user import UserService
             try:
-                user = UserService.add_user(name, username, email)
+                user = UserService.add_user(name, username, email, password)
                 return jsonify({
                     'message': 'Recipe added successfully!',
                     'recipe': {
-                        '': user.id,
+                        'user_id': user.id,
                         'name': user.name,
-                        'ingredients': user.ingredients,
-                        
+                        'username': user.username,
+                        'email': user.email,
+                        'password': user.password
                     }
                 }), 201
             except Exception as e:
