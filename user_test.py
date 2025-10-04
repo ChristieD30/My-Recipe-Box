@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from app import db, create_app
-from app.service.user_update_delete import UserService
+from app.service.user import UserService
 from app.model.users import User
 
 print("Import successful!")
