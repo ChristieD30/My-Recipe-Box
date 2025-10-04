@@ -1,12 +1,16 @@
-
 from app.model.recipes import Recipe
 from app import db
 
 class RecipeService:
     @staticmethod
-    def add_recipe(name, ingredients, user_id=1):
+    def add_recipe(name, ingredients, instructions, user_id=None):
         try:
-            new_recipe = Recipe(name=name, ingredients=ingredients, user_id=user_id)
+            new_recipe = Recipe(
+                name=name,
+                ingredients=ingredients,
+                instructions=instructions,
+                user_id=user_id
+            )
             db.session.add(new_recipe)
             db.session.commit()
             return new_recipe

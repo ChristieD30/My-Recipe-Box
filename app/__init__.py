@@ -38,7 +38,7 @@ def create_app():
         # Test the database connection
         try:
             from app.service.recipe import RecipeService
-            RecipeService.add_recipe("Test Recipe-1", "Ingredient1, Ingredient2")
+            RecipeService.add_recipe("Test Recipe-1", "Ingredient1, Ingredient2", instructions="step 1 step 2")
             return "Welcome to My Recipe Box! Database connection successful!"
         except Exception as e:
             return f"Error: {str(e)}"
