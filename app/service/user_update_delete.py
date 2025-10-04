@@ -1,6 +1,6 @@
 from app import db
 from app.model.users import User
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class UserService:
 
@@ -35,6 +35,13 @@ class UserService:
             print(f"Unexpected error: {str(e)}")
             return {"error": "An unexpected error occurred."}
             raise
+
+    @staticmethod
+    def authenticate(username, password):
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            return user
+        return None
 
     @staticmethod
     def delete_user(user_id):
