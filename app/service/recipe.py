@@ -3,7 +3,7 @@ from app import db
 
 class RecipeService:
     @staticmethod
-    def add_recipe(name, ingredients, user_id=1):
+    def add_recipe(name, ingredients, instructions, user_id=None):
         try:
             # Check if recipe with the same name exists for this user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -11,6 +11,12 @@ class RecipeService:
                 return None, "Recipe name already exists. Please rename it."
 
             new_recipe = Recipe(name=name, ingredients=ingredients, user_id=user_id)
+            new_recipe = Recipe(
+                name=name,
+                ingredients=ingredients,
+                instructions=instructions,
+                user_id=user_id
+            )
             db.session.add(new_recipe)
             db.session.commit()
             message = f"Your recipe '{name}' is added."
