@@ -15,7 +15,7 @@ class FavoriteService:
             new_favorite = Favorite(user_id=user_id, recipe_id=recipe_id)
             db.session.add(new_favorite)
             db.session.commit()
-            return new_favorite.favorite_id  # Returning favorite_id
+            return new_favorite.id  # Returning the correct primary key 'id'
         except Exception as e:
             db.session.rollback()
             print(f"Error favoriting recipe: {str(e)}")
