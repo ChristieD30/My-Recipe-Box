@@ -25,6 +25,8 @@ class UserService:
             )
             db.session.add(new_user)
             db.session.commit()
+            
+            print("User account successfully created!")
             return new_user
         
         except ValueError as ve:
