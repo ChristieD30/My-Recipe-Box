@@ -29,9 +29,10 @@ def create_app():
     from table_creation import create_tables
     
     # Create tables if they don't exist
-    with app.app_context():
-        create_tables()
-        print("Database initialization complete")
+    # Doesn't yet check if they exist first, so need to comment out so that it doesn't run every time
+#    with app.app_context():
+#        create_tables()
+#        print("Database initialization complete")
     
     @app.route('/')
     def home():
