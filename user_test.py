@@ -79,7 +79,7 @@ def verify_admin_user_exists():
     else:
         print("ERROR: Admin user is missing!")
 
-# Debug: List all users in the database
+# Debug: List all users in database
 def list_all_users():
     print("\nAll users currently in database:")
     users = User.query.all()
