@@ -82,7 +82,12 @@ My-Recipe-Box/
   ```bash
   curl -X POST http://127.0.0.1:5000/add_recipe \
        -H "Content-Type: application/json" \
-       -d '{"name": "Cake", "ingredients": "flour, sugar, eggs", "instructions": "step 1, mix. Step 2, bake."}'
+       -d '{
+       "name": "Cake", 
+       "ingredients": "flour, sugar, eggs",
+       "instructions: "1. Mix ingredients 2. Bake at 350",
+       "user_id: "1" 
+       }'
   ```
 
 ## Notes

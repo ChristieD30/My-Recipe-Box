@@ -49,16 +49,31 @@ def create_app():
         name = data.get('name')
         ingredients = data.get('ingredients')
         instructions = data.get('instructions', '')
+        user_id = data.get('user_id')
+        
+        # Convert user_id to int if it exists
+        if user_id is not None:
+            try:
+                user_id = int(user_id)
+            except ValueError:
+                return jsonify({'error': 'user_id must be a valid integer'}), 400
+
         from app.service.recipe import RecipeService
         try:
-            recipe = RecipeService.add_recipe(name, ingredients, instructions)
+            recipe = RecipeService.add_recipe(
+                name=name,
+                ingredients=ingredients,
+                instructions=instructions,
+                user_id=user_id
+            )
             return jsonify({
                 'message': 'Recipe added successfully!',
                 'recipe': {
                     'recipe_id': recipe.id,
                     'name': recipe.name,
                     'ingredients': recipe.ingredients,
-                    'instructions': recipe.instructions
+                    'instructions': recipe.instructions,
+                    'user_id': recipe.user_id
                 }
             }), 201
         except Exception as e:
