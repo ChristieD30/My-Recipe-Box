@@ -70,7 +70,7 @@ def clear_user_data():
 
     db.session.commit()
 
-# Check that admin user still exists
+# Check admin user still exists
 def verify_admin_user_exists():
     print("\nVerifying admin user still exists...")
     admin_user = User.query.filter_by(username='admin').first()
@@ -86,7 +86,7 @@ def list_all_users():
     for user in users:
         print(f"- {user.id}: {user.username} ({user.email})")
 
-# 🔹 Run tests
+# 🔹 Run tests 
 if __name__ == "__main__":
     try:
         test_add_user()
@@ -96,7 +96,6 @@ if __name__ == "__main__":
         clear_user_data()
         verify_admin_user_exists()
         list_all_users()
-
 
 
 
