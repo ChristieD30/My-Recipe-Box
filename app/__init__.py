@@ -116,6 +116,34 @@ def create_app():
         return jsonify([recipe.to_dict() for recipe in recipes])
     
 
+    @app.route('/login', methods=['POST'])
+    def login():
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
 
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required to login.'}), 400
+
+    from app.service.user import UserService
+    user = UserService.authenticate(username, password)
+
+    if user:
+        return jsonify({
+            'message': 'Login successful!',
+            'user': {
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'name': user.name,
+                'created_at': user.created_at.isoformat()
+            }
+        }), 200
+    else:
+        return jsonify({
+            'error': 'Invalid username or password.',
+            'note': 'Recovering your username or resetting your password is not available through this interface. '
+                    'Please email myrecipieboxsupport@example.com to request assistance.'
+        }), 401
+    
     return app
-
