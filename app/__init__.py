@@ -104,4 +104,25 @@ def create_app():
                 }), 201
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
+
+    @app.route('/search/<ingredients>', methods=['GET'])
+    def search_recipes(ingredients):
+        from app.service.recipe import RecipeService
+        try:
+            print(f"Searching for ingredients: {ingredients}")
+            recipes = RecipeService.get_recipes_by_ingredients(ingredients)
+            recipes_list = [{
+                'recipe_id': r.id,
+                'name': r.name,
+                'ingredients': r.ingredients,
+                'instructions': r.instructions,
+                'user_id': r.user_id
+            } for r in recipes]
+            return jsonify({'recipes': recipes_list}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+
+
     return app
+

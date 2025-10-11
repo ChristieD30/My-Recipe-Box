@@ -85,11 +85,18 @@ def create_tables():
         )
     ]
 
-    # Insert the default recipes
-    cursor.executemany(
-        "INSERT OR IGNORE INTO recipes (name, ingredients, instructions, user_id) VALUES (?, ?, ?, ?)",
-        default_recipes
-    )
+
+    # Insert each default recipe only if it doesn't already exist for this user
+    for name, ingredients, instructions, user_id in default_recipes:
+        cursor.execute(
+            "SELECT 1 FROM recipes WHERE name = ? AND user_id = ?",
+            (name, user_id)
+        )
+        if cursor.fetchone() is None:
+            cursor.execute(
+                "INSERT INTO recipes (name, ingredients, instructions, user_id) VALUES (?, ?, ?, ?)",
+                (name, ingredients, instructions, user_id)
+            )
 
     conn.commit()
     conn.close()
