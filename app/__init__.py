@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, app, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import os
 import sys
@@ -105,22 +105,14 @@ def create_app():
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
 
-    @app.route('/search/<ingredients>', methods=['GET'])
-    def search_recipes(ingredients):
+    @app.route('/search', methods=['GET'])
+    def search_recipes_route():
         from app.service.recipe import RecipeService
-        try:
-            print(f"Searching for ingredients: {ingredients}")
-            recipes = RecipeService.get_recipes_by_ingredients(ingredients)
-            recipes_list = [{
-                'recipe_id': r.id,
-                'name': r.name,
-                'ingredients': r.ingredients,
-                'instructions': r.instructions,
-                'user_id': r.user_id
-            } for r in recipes]
-            return jsonify({'recipes': recipes_list}), 200
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+        ingredients = request.args.get('ingredients')
+        category = request.args.get('category')
+        recipes = RecipeService.search_recipes(ingredients, category)
+        # Convert recipes to dicts if needed
+        return jsonify([recipe.to_dict() for recipe in recipes])
     
 
 

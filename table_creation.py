@@ -33,6 +33,7 @@ def create_tables():
         name VARCHAR(100) NOT NULL,
         ingredients TEXT NOT NULL,
         instructions TEXT NOT NULL,
+        category TEXT NOT NULL,
         user_id INTEGER NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -63,39 +64,42 @@ def create_tables():
     cursor.execute("SELECT id FROM users WHERE username = 'admin'")
     admin_id = cursor.fetchone()[0]
 
-    # Add some default vegan recipes
+    # Add some default vegan recipes with categories
     default_recipes = [
         (
             'Vegan Chocolate Chip Cookies',
             '2 1/4 cups all-purpose flour\n1 cup vegan butter, softened\n3/4 cup organic sugar\n3/4 cup brown sugar\n1/4 cup applesauce (egg replacement)\n1 tsp vanilla extract\n1 tsp baking soda\n1/2 tsp salt\n2 cups dairy-free chocolate chips',
             '1. Preheat oven to 375°F (190°C)\n2. Cream together vegan butter and sugars\n3. Mix in applesauce and vanilla\n4. Mix in dry ingredients\n5. Stir in dairy-free chocolate chips\n6. Drop by rounded tablespoons onto ungreased baking sheets\n7. Bake for 10 to 12 minutes or until golden brown',
+            'Dessert',
             admin_id
         ),
         (
             'Lentil Mushroom Bolognese',
             '1 lb whole grain spaghetti\n2 cups brown lentils, cooked\n16 oz mushrooms, finely chopped\n1 onion, diced\n4 cloves garlic, minced\n2 cans (14 oz each) crushed tomatoes\n3 tbsp olive oil\n2 tbsp nutritional yeast\n1 tsp dried basil\n1 tsp dried oregano\n1/2 tsp red pepper flakes\nSalt and pepper to taste',
             '1. Cook spaghetti according to package directions\n2. In a large pan, heat olive oil and sauté onion and garlic until soft\n3. Add mushrooms and cook until they release their moisture\n4. Add cooked lentils, tomatoes, and herbs\n5. Simmer for 20 minutes, stirring occasionally\n6. Add nutritional yeast and season with salt and pepper\n7. Serve over spaghetti with extra nutritional yeast if desired',
+            'Main',
             admin_id
         ),
         (
             'Rainbow Buddha Bowl',
             '2 cups quinoa, cooked\n2 sweet potatoes, cubed\n2 cups chickpeas, drained and rinsed\n4 cups kale, chopped\n2 avocados, sliced\n1 cup red cabbage, shredded\n1 cup carrots, julienned\nTahini Dressing:\n1/4 cup tahini\n2 tbsp lemon juice\n1 tbsp maple syrup\n2 cloves garlic, minced\nWater to thin\nSalt and pepper to taste',
             '1. Preheat oven to 400°F (200°C)\n2. Toss sweet potatoes with olive oil, salt, and pepper, roast for 25 minutes\n3. Season chickpeas with spices and roast for 20 minutes until crispy\n4. Massage kale with olive oil and lemon juice\n5. Make dressing: whisk together tahini, lemon juice, maple syrup, garlic, and water\n6. Assemble bowls: quinoa base, topped with roasted veggies, fresh vegetables, and avocado\n7. Drizzle with tahini dressing and serve',
+            'Bowl',
             admin_id
         )
     ]
 
 
     # Insert each default recipe only if it doesn't already exist for this user
-    for name, ingredients, instructions, user_id in default_recipes:
+    for name, ingredients, instructions, category, user_id in default_recipes:
         cursor.execute(
             "SELECT 1 FROM recipes WHERE name = ? AND user_id = ?",
             (name, user_id)
         )
         if cursor.fetchone() is None:
             cursor.execute(
-                "INSERT INTO recipes (name, ingredients, instructions, user_id) VALUES (?, ?, ?, ?)",
-                (name, ingredients, instructions, user_id)
+                "INSERT INTO recipes (name, ingredients, instructions, category, user_id) VALUES (?, ?, ?, ?, ?)",
+                (name, ingredients, instructions, category, user_id)
             )
 
     conn.commit()
