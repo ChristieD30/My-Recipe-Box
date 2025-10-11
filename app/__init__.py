@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, app, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import os
 import sys
@@ -29,9 +29,10 @@ def create_app():
     from table_creation import create_tables
     
     # Create tables if they don't exist
-    with app.app_context():
-        create_tables()
-        print("Database initialization complete")
+    # Doesn't yet check if they exist first, so need to comment out so that it doesn't run every time
+#    with app.app_context():
+#        create_tables()
+#        print("Database initialization complete")
     
     @app.route('/')
     def home():
@@ -104,4 +105,45 @@ def create_app():
                 }), 201
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
+
+    @app.route('/search', methods=['GET'])
+    def search_recipes_route():
+        from app.service.recipe import RecipeService
+        ingredients = request.args.get('ingredients')
+        category = request.args.get('category')
+        recipes = RecipeService.search_recipes(ingredients, category)
+        # Convert recipes to dicts if needed
+        return jsonify([recipe.to_dict() for recipe in recipes])
+    
+
+    @app.route('/login', methods=['POST'])
+    def login():
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required to login.'}), 400
+
+    from app.service.user import UserService
+    user = UserService.authenticate(username, password)
+
+    if user:
+        return jsonify({
+            'message': 'Login successful!',
+            'user': {
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'name': user.name,
+                'created_at': user.created_at.isoformat()
+            }
+        }), 200
+    else:
+        return jsonify({
+            'error': 'Invalid username or password.',
+            'note': 'Recovering your username or resetting your password is not available through this interface. '
+                    'Please email myrecipieboxsupport@example.com to request assistance.'
+        }), 401
+    
     return app

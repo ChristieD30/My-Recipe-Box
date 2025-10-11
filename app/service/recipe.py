@@ -3,14 +3,13 @@ from app import db
 
 class RecipeService:
     @staticmethod
-    def add_recipe(name, ingredients, instructions, user_id=None):
+    def add_recipe(name, ingredients, instructions, category, user_id=None):
         try:
             # Check if recipe with the same name exists for this user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please rename it."
 
-            new_recipe = Recipe(name=name, ingredients=ingredients, user_id=user_id)
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
@@ -33,6 +32,7 @@ class RecipeService:
             "error": "Recipe deletion is not available through this interface. "
                      "Please email myrecipieboxsupport@example.com to request recipe deletion."
         }
+    
 
     def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None):
         try:
@@ -68,4 +68,33 @@ class RecipeService:
         except Exception as e:
             db.session.rollback()
             print(f"Error duplicating recipe: {str(e)}")
+            raise
+
+    @staticmethod
+    def search_recipes(ingredients=None, category=None):
+        try:
+            print(f"ingredients: {ingredients}, category: {category}")
+            query = Recipe.query
+            # Filter by category if provided
+            if category and category.strip():
+                query = query.filter(Recipe.category.ilike(f"%{category.strip()}%"))
+            # Filter by ingredients if provided
+            if ingredients and ingredients.strip():
+                search_terms = [term.strip().lower() for term in ingredients.split(',') if term.strip()]
+                if search_terms:
+                    recipes = query.all()
+                    filtered = []
+                    for recipe in recipes:
+                        recipe_ingredient_lines = [line.strip().lower() for line in recipe.ingredients.split('\n') if line.strip()]
+                        if all(any(term in ingredient_line for ingredient_line in recipe_ingredient_lines) for term in search_terms):
+                            filtered.append(recipe)
+                    print(f"Filtered recipes: {[r.name for r in filtered]}")
+                    return filtered
+                else:
+                    return query.all()
+            else:
+                # If no ingredients filter, just return by category (or all)
+                return query.all()
+        except Exception as e:
+            print(f"Error retrieving recipes: {str(e)}")
             raise
