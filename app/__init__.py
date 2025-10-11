@@ -30,9 +30,9 @@ def create_app():
     
     # Create tables if they don't exist
     # Doesn't yet check if they exist first, so need to comment out so that it doesn't run every time
-#    with app.app_context():
-#        create_tables()
-#        print("Database initialization complete")
+    # with app.app_context():
+    #     create_tables()
+    #     print("Database initialization complete")
     
     @app.route('/')
     def home():
@@ -122,28 +122,28 @@ def create_app():
         username = data.get('username')
         password = data.get('password')
 
-    if not username or not password:
-        return jsonify({'error': 'Username and password are required to login.'}), 400
+        if not username or not password:
+            return jsonify({'error': 'Username and password are required to login.'}), 400
 
-    from app.service.user import UserService
-    user = UserService.authenticate(username, password)
+        from app.service.user import UserService
+        user = UserService.authenticate(username, password)
 
-    if user:
-        return jsonify({
-            'message': 'Login successful!',
-            'user': {
-                'user_id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'name': user.name,
-                'created_at': user.created_at.isoformat()
-            }
-        }), 200
-    else:
-        return jsonify({
-            'error': 'Invalid username or password.',
-            'note': 'Recovering your username or resetting your password is not available through this interface. '
-                    'Please email myrecipieboxsupport@example.com to request assistance.'
-        }), 401
-    
+        if user:
+            return jsonify({
+                'message': 'Login successful!',
+                'user': {
+                    'user_id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'name': user.name,
+                    'created_at': user.created_at.isoformat()
+                }
+            }), 200
+        else:
+            return jsonify({
+                'error': 'Invalid username or password.',
+                'note': 'Recovering your username or resetting your password is not available through this interface. '
+                        'Please email myrecipieboxsupport@example.com to request assistance.'
+            }), 401
+        
     return app
