@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-import os
-import sys
+
+from app import db
+from app.model.recipes import Recipe
 
 class RecipeService:
     @staticmethod
