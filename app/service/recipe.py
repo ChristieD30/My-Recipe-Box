@@ -1,4 +1,5 @@
 from app.model.recipes import Recipe
+from enums import Category
 from app import db
 
 class RecipeService:
@@ -9,10 +10,14 @@ class RecipeService:
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please rename it."
+            
+            if category not in [cat.value for cat in Category]:
+                return None, f"Invalid category. Valid categories are: {[cat.value for cat in Category]}"
 
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
+                category=category,
                 instructions=instructions,
                 user_id=user_id
             )

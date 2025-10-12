@@ -90,6 +90,18 @@ My-Recipe-Box/
        }'
   ```
 
+  ```bash
+  curl -X POST http://127.0.0.1:5000/add_recipe \
+       -H "Content-Type: application/json" \
+       -d '{
+       "name": "Butternut Squash Soup",
+       "ingredients": "1 butternut squash, peeled and cubed, 1 onion, chopped, 2 cloves garlic, minced, 4 cups vegetable broth, 1 cup coconut milk, 1 tsp salt, 1/2 tsp pepper, 1/2 tsp ground nutmeg",
+       "instructions": "1. Sauté onion and garlic until soft. 2. Add squash and cook for 5 minutes. 3. Add broth, bring to a boil, then simmer until squash is tender. 4. Blend until smooth. 5. Stir in coconut milk, salt, pepper, and nutmeg. Heat through and serve.",
+       "category": "Soup",
+       "user_id": 1
+     }'
+  ```
+
 ## Notes
 - Make sure the app is running before testing endpoints.
 - The database file (`recipe_box.db`) will be created automatically.
