@@ -8,4 +8,4 @@ class Category(Enum):
     SALADS = "Salads"
     SOUP = "Soup"
     SNACKS = "Snacks"
-    # Add more categories as needed
+    UNCATEGORIZED = "Uncategorized"

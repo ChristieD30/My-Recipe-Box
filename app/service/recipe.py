@@ -1,5 +1,5 @@
 from app.model.recipes import Recipe
-from enums import Category
+from app.enums import Category
 from app import db
 
 class RecipeService:
