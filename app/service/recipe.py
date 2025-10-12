@@ -6,19 +6,28 @@ from app.model.recipes import Recipe
 
 class RecipeService:
     @staticmethod
-    def add_recipe(name, ingredients, instructions=''):
-        recipe = Recipe(name=name, ingredients=ingredients, instructions=instructions)
-        db.session.add(recipe)
-        db.session.commit()
-        return recipe
+    def add_recipe(name, ingredients, instructions, category, user_id=None):
+        try:
+            # Check if recipe with the same name exists for this user
+            existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
+            if existing:
+                return None, "Recipe name already exists. Please rename it."
 
-    @staticmethod
-    def get_random_recipe():
-        recipe = Recipe.query.order_by(db.func.random()).first()
-        if recipe:
-            return recipe, f"Hello there! Your random kitchen adventure awaits. Try it before it vanishes!\n"
-        else:
-            return None, "No recipes found."
+            new_recipe = Recipe(
+                name=name,
+                ingredients=ingredients,
+                instructions=instructions,
+                user_id=user_id
+            )
+            db.session.add(new_recipe)
+            db.session.commit()
+            message = f"Your recipe '{name}' is added."
+            return new_recipe, message
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error adding recipe: {str(e)}")
+            raise
+
     @staticmethod
     def delete_recipe(recipe_id, user_id=None):
         print("Recipe deletion must be requested by emailing myrecipieboxsupport@example.com.")
@@ -92,4 +101,13 @@ class RecipeService:
         except Exception as e:
             print(f"Error retrieving recipes: {str(e)}")
             raise
+    
+
+    @staticmethod
+    def get_random_recipe():
+        recipe = Recipe.query.order_by(db.func.random()).first()
+        if recipe:
+            return recipe, f"Hello there! Your random kitchen adventure awaits. Try it before it vanishes!\n"
+        else:
+            return None, "No recipes found."
 
