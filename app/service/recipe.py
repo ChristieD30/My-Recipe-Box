@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
@@ -23,7 +24,8 @@ class RecipeService:
                 ingredients=ingredients,
                 category=category,
                 instructions=instructions,
-                user_id=user_id
+                category=category,
+                user_id=user_id # can't leave this null
             )
             db.session.add(new_recipe)
             db.session.commit()
@@ -107,6 +109,36 @@ class RecipeService:
         except Exception as e:
             print(f"Error retrieving recipes: {str(e)}")
             raise
+
+    @staticmethod
+    # will probably want to filter by user_id once we start adding users
+    def read_recipes():
+    #def read_recipes(uid):
+        recs = Recipe.query.all()
+        # will also need to add user_id argument at that time
+        #recs = Recipe.query.filterby(user_id=uid)
+        for r in recs:
+            print("Name:\n",r.name)
+            print()
+            print("Ingredients:\n", r.ingredients)
+            print()
+            print("Instructions:\n", r.instructions)
+            print()
+            print("Category:\n", r.category)
+            print()
+            print("Created At:\n", r.created_at)
+            print()
+            print("Updated At:\n", r.updated_at)
+
+    @staticmethod
+    def update_recipe(id, name, ingredients, instructions, category):
+        rec = Recipe.query.filter_by(id=id).first()
+        rec.name = name
+        rec.ingredients = ingredients
+        rec.instructions = instructions
+        rec.category = category
+        rec.updated_at = datetime.now()
+        db.session.commit()
     
 
     @staticmethod
