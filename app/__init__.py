@@ -49,9 +49,10 @@ def create_app():
         data = request.get_json()
         name = data.get('name')
         ingredients = data.get('ingredients')
+        category = data.get('category', 'UNCATEGORIZED')  # Default category if not provided
         instructions = data.get('instructions', '')
         user_id = data.get('user_id')
-        
+
         # Convert user_id to int if it exists
         if user_id is not None:
             try:
@@ -61,19 +62,23 @@ def create_app():
 
         from app.service.recipe import RecipeService
         try:
-            recipe = RecipeService.add_recipe(
+            recipe, message = RecipeService.add_recipe(
                 name=name,
                 ingredients=ingredients,
+                category=category,
                 instructions=instructions,
                 user_id=user_id
             )
+            if recipe is None:
+                return jsonify({'error': message}), 400
             return jsonify({
-                'message': 'Recipe added successfully!',
+                'message': message,
                 'recipe': {
                     'recipe_id': recipe.id,
                     'name': recipe.name,
                     'ingredients': recipe.ingredients,
                     'instructions': recipe.instructions,
+                    'category': recipe.category,
                     'user_id': recipe.user_id
                 }
             }), 201
@@ -145,5 +150,23 @@ def create_app():
                 'note': 'Recovering your username or resetting your password is not available through this interface. '
                         'Please email myrecipieboxsupport@example.com to request assistance.'
             }), 401
+        
+    @app.route('/random_recipe', methods=['GET'])
+    def get_random_recipe():
+        from app.service.recipe import RecipeService
+        recipe, message = RecipeService.get_random_recipe()
+        if recipe:
+            return jsonify({
+                'message': message,
+                'recipe': {
+                    'recipe_id': recipe.id,
+                    'name': recipe.name,
+                    'ingredients': recipe.ingredients,
+                    'instructions': recipe.instructions,
+                    'user_id': recipe.user_id
+                }
+            }), 200
+        else:
+            return jsonify({'error': message}), 404
         
     return app

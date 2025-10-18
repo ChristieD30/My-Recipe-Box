@@ -1,6 +1,11 @@
 from datetime import datetime
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
 from app.model.recipes import Recipe
+from app.enums import Category
 from app import db
+from app.model.recipes import Recipe
 
 class RecipeService:
     @staticmethod
@@ -10,10 +15,14 @@ class RecipeService:
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please rename it."
+            
+            if category not in [cat.value for cat in Category]:
+                return None, f"Invalid category. Valid categories are: {[cat.value for cat in Category]}"
 
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
+                category=category,
                 instructions=instructions,
                 category=category,
                 user_id=user_id # can't leave this null
@@ -35,7 +44,7 @@ class RecipeService:
                      "Please email myrecipieboxsupport@example.com to request recipe deletion."
         }
     
-
+    @staticmethod
     def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None):
         try:
             # Fetch the original recipe
@@ -130,3 +139,13 @@ class RecipeService:
         rec.category = category
         rec.updated_at = datetime.now()
         db.session.commit()
+    
+
+    @staticmethod
+    def get_random_recipe():
+        recipe = Recipe.query.order_by(db.func.random()).first()
+        if recipe:
+            return recipe, f"Hello there! Your random kitchen adventure awaits. Try it before it vanishes!\n"
+        else:
+            return None, "No recipes found."
+
