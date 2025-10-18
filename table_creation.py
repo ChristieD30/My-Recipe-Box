@@ -4,6 +4,7 @@ Create the database tables for the recipe box application
 
 import sqlite3
 from datetime import datetime
+from app.enums import Category
 
 def create_tables():
     conn = sqlite3.connect('recipe_box.db')
