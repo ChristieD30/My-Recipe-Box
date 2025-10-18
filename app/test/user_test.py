@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, project_root)
@@ -10,12 +11,16 @@ from app.model.users import User
 
 print("Import successful!")
 
+db_fd, db_path = tempfile.mkstemp()
+
 app = create_app()
 app.app_context().push()
 
 app.config['TESTING'] = True
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
 
-db.create_all()
+with app.app_context():
+    db.create_all()
 
 # Ensure admin user exists
 def ensure_admin_user():
@@ -96,6 +101,10 @@ if __name__ == "__main__":
         clear_user_data()
         verify_admin_user_exists()
         list_all_users()
+        db.session.remove()
+        db.drop_all()
+        os.close(db_fd)
+        os.unlink(db_path)       
 
 
 
