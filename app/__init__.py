@@ -1,4 +1,4 @@
-from flask import Flask, app, request, jsonify
+from flask import Flask, app, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 import os
 import sys
@@ -38,18 +38,20 @@ def create_app():
     def home():
         # Test the database connection
         try:
-            from app.service.recipe import RecipeService
-            RecipeService.add_recipe("Test Recipe-1", "Ingredient1, Ingredient2", instructions="step 1 step 2")
-            return "Welcome to My Recipe Box! Database connection successful!"
+            return render_template('index.html')
         except Exception as e:
             return f"Error: {str(e)}"
     
+    
     @app.route('/add_recipe', methods=['POST'])
     def create_recipe():
-        data = request.get_json()
+        if request.content_type == 'application/json':
+            data = request.get_json()
+        else:
+            data = request.form
         name = data.get('name')
         ingredients = data.get('ingredients')
-        category = data.get('category', 'UNCATEGORIZED')  # Default category if not provided
+        category = data.get('category', 'Uncategorized')  # Default category if not provided
         instructions = data.get('instructions', '')
         user_id = data.get('user_id')
 
@@ -65,8 +67,8 @@ def create_app():
             recipe, message = RecipeService.add_recipe(
                 name=name,
                 ingredients=ingredients,
-                category=category,
                 instructions=instructions,
+                category=category,
                 user_id=user_id
             )
             if recipe is None:

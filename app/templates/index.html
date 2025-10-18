@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>Recipe App</title>
+</head>
+<body>
+<h1>This is the our main page.</h1>
+<h2>Add a recipe here</h2>
+    <form method="POST" action="/add_recipe">
+        <label for="name">Recipe Name:</label><br>
+        <input type="text" id="name" name="name"><br><br>
+        <label for="ingredients">Ingredients:</label><br>
+        <input type="text" id="ingredients" name="ingredients"><br><br>
+        <label for="category">Category:</label><br>
+        <input type="text" id="category" name="category"><br><br>
+        <label for="instructions">Instructions:</label><br>
+        <textarea id="instructions" name="instructions"></textarea><br><br>
+        <label for="user_id">User ID:</label><br>
+        <input type="number" id="user_id" name="user_id"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html> 
