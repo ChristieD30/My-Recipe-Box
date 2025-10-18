@@ -151,4 +151,22 @@ def create_app():
                         'Please email myrecipieboxsupport@example.com to request assistance.'
             }), 401
         
+    @app.route('/random_recipe', methods=['GET'])
+    def get_random_recipe():
+        from app.service.recipe import RecipeService
+        recipe, message = RecipeService.get_random_recipe()
+        if recipe:
+            return jsonify({
+                'message': message,
+                'recipe': {
+                    'recipe_id': recipe.id,
+                    'name': recipe.name,
+                    'ingredients': recipe.ingredients,
+                    'instructions': recipe.instructions,
+                    'user_id': recipe.user_id
+                }
+            }), 200
+        else:
+            return jsonify({'error': message}), 404
+        
     return app
