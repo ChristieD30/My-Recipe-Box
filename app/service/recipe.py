@@ -22,7 +22,6 @@ class RecipeService:
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
-                category=category,
                 instructions=instructions,
                 category=category,
                 user_id=user_id # can't leave this null
