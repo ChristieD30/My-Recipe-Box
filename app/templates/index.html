@@ -1,22 +1,95 @@
 <html>
 <head>
-<title>Recipe App</title>
+<title>My Recipe Box</title>
 </head>
 <body>
-<h1>This is the our main page.</h1>
-<h2>Add a recipe here</h2>
-    <form method="POST" action="/add_recipe">
-        <label for="name">Recipe Name:</label><br>
-        <input type="text" id="name" name="name"><br><br>
-        <label for="ingredients">Ingredients:</label><br>
-        <input type="text" id="ingredients" name="ingredients"><br><br>
-        <label for="category">Category:</label><br>
-        <input type="text" id="category" name="category"><br><br>
-        <label for="instructions">Instructions:</label><br>
-        <textarea id="instructions" name="instructions"></textarea><br><br>
-        <label for="user_id">User ID:</label><br>
-        <input type="number" id="user_id" name="user_id"><br><br>
-        <input type="submit" value="Submit">
+<h1>Welcome to My Recipe Box!</h1>
+<nav>
+    <form method="GET" action="/search">
+        <input type="text" name="q" placeholder="Search recipes..." required>
+        <button type="submit">Search</button>
     </form>
+</nav>
+<div id="userInfo" style="display: none;">
+    <span id="welcomeMessage"></span>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<div id="loginPrompt" style="display: none;">
+    <p>Please <a href="/login">login</a> to add recipes and access all features.</p>
+</div>
+
+<div>
+    <a href="/login">Login</a>
+    <a href="/signup">Sign Up</a>
+    <a href="/search">Search Recipes</a>
+</div>
+
+<!-- <div id="recipeForm" style="display: none;">
+    <h2>Add a New Recipe</h2> -->
+    <!-- <form method="POST" action="/add_recipe">
+        <div>
+            <label for="name">Recipe Name:</label><br>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <br>
+        <div>
+            <label for="ingredients">Ingredients:</label><br>
+            <textarea id="ingredients" name="ingredients" required></textarea>
+        </div>
+        <br>
+        <div>
+            <label for="category">Category:</label><br>
+            <select id="category" name="category">
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Dessert">Dessert</option>
+                <option value="Snack">Snack</option>
+                <option value="Uncategorized">Uncategorized</option>
+            </select>
+        </div>
+        <br>
+        <div>
+            <label for="instructions">Instructions:</label><br>
+            <textarea id="instructions" name="instructions" required></textarea>
+        </div>
+        <br>
+        <input type="submit" value="Add Recipe">
+    </form>
+</div> -->
+
+<script>
+
+fetch('/current_user')
+    .then(response => response.json())
+    .then(data => {
+        if (data.logged_in) {
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.name || data.username}! 👋`;
+            document.getElementById('recipeForm').style.display = 'block';
+        } else {
+            document.getElementById('loginPrompt').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error with login status:', error);
+        document.getElementById('loginPrompt').style.display = 'block';
+    });
+
+// Logout function
+function logout() {
+    fetch('/logout', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert('Logged out successfully!');
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error logging out:', error);
+        });
+}
+</script>
+
 </body>
 </html> 
