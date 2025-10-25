@@ -1,4 +1,6 @@
-from flask import Flask, app, request, jsonify, render_template, session
+from datetime import datetime
+from flask import Flask, app, redirect, request, jsonify, render_template, url_for
+
 from flask_sqlalchemy import SQLAlchemy
 import os
 import sys
@@ -244,4 +246,29 @@ def create_app():
         else:
             return jsonify({'error': message}), 404
         
+    @app.route('/display', methods=["GET", "POST"])
+    def display_recipes():
+        # To Do:
+        # Add CSS to remove border around Updated text box (maybe just replace with another label?)
+        # Add another button to return to home page
+        # General CSS formatting, including making the Name text box wider
+        from app.service.recipe import RecipeService # could we put this at the top instead of separately in each procedure ?
+        page = request.args.get("page", 1, type=int)
+        per_page = 1
+        paginated_recipes = Recipe.query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
+        recipe = paginated_recipes.items[0] if paginated_recipes.items else None
+        
+        if request.method == "POST":
+            # Update recipe data
+            recipe.name = request.form["name"]
+            recipe.ingredients = request.form["ingredients"]
+            recipe.instructions = request.form["instructions"]
+            recipe.category = request.form["category"]
+            recipe.updated_at = datetime.now().astimezone()
+            db.session.commit()
+            return redirect(url_for("display_recipes", page=page))
+
+        return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes)
+
     return app
+

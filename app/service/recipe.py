@@ -104,37 +104,6 @@ class RecipeService:
         return recipes_query.all()
 
     @staticmethod
-    # will probably want to filter by user_id once we start adding users
-    def read_recipes():
-    #def read_recipes(uid):
-        recs = Recipe.query.all()
-        # will also need to add user_id argument at that time
-        #recs = Recipe.query.filterby(user_id=uid)
-        for r in recs:
-            print("Name:\n",r.name)
-            print()
-            print("Ingredients:\n", r.ingredients)
-            print()
-            print("Instructions:\n", r.instructions)
-            print()
-            print("Category:\n", r.category)
-            print()
-            print("Created At:\n", r.created_at)
-            print()
-            print("Updated At:\n", r.updated_at)
-
-    @staticmethod
-    def update_recipe(id, name, ingredients, instructions, category):
-        rec = Recipe.query.filter_by(id=id).first()
-        rec.name = name
-        rec.ingredients = ingredients
-        rec.instructions = instructions
-        rec.category = category
-        rec.updated_at = datetime.now()
-        db.session.commit()
-    
-
-    @staticmethod
     def get_random_recipe():
         recipe = Recipe.query.order_by(db.func.random()).first()
         if recipe:
