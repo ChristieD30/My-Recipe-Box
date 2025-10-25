@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import Flask, app, redirect, request, jsonify, render_template, url_for
+
 from flask_sqlalchemy import SQLAlchemy
 import os
 import sys
@@ -10,6 +11,9 @@ db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
+    
+    # Add secret key for sessions
+    app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
     
     # Configure the SQLite database
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -35,6 +39,12 @@ def create_app():
     #     create_tables()
     #     print("Database initialization complete")
     
+    # Helper function to check if user is logged in
+    def require_login():
+        if 'logged_in' not in session or not session['logged_in']:
+            return jsonify({'error': 'Login required'}), 401
+        return None
+    
     @app.route('/')
     def home():
         # Test the database connection
@@ -43,9 +53,18 @@ def create_app():
         except Exception as e:
             return f"Error: {str(e)}"
     
+    @app.route('/login', methods=['GET'])
+    def login_form():
+        return render_template('login.html')
+    
     
     @app.route('/add_recipe', methods=['POST'])
     def create_recipe():
+        # Check if user is logged in
+        auth_check = require_login()
+        if auth_check:
+            return auth_check
+            
         if request.content_type == 'application/json':
             data = request.get_json()
         else:
@@ -54,14 +73,9 @@ def create_app():
         ingredients = data.get('ingredients')
         category = data.get('category', 'Uncategorized')  # Default category if not provided
         instructions = data.get('instructions', '')
-        user_id = data.get('user_id')
-
-        # Convert user_id to int if it exists
-        if user_id is not None:
-            try:
-                user_id = int(user_id)
-            except ValueError:
-                return jsonify({'error': 'user_id must be a valid integer'}), 400
+        
+        # Use the logged-in user's ID
+        user_id = session['user_id']
 
         from app.service.recipe import RecipeService
         try:
@@ -88,45 +102,80 @@ def create_app():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
+    @app.route('/signup')
+    def signup():
+        try:
+            return render_template('signup.html')
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
 
     @app.route('/add_user', methods=['POST'])
     def create_user():
+        if request.content_type == 'application/json':
             data = request.get_json()
-            username = data.get('username')
-            name = data.get('name')
-            email = data.get('email')
-            password = data.get('password', '')
+        else:
+            data = request.form
+        
+        username = data.get('username')
+        name = data.get('name')
+        email = data.get('email')
+        password = data.get('password', '')
 
+        # Validate required fields
+        if not all([username, name, email, password]):
+            error_msg = 'All fields (username, name, email, password) are required.'
+            return jsonify({'error': error_msg}), 400
 
-            from app.service.user import UserService
-            try:
-                user = UserService.add_user(name, username, email, password)
-                return jsonify({
-                    'message': 'Recipe added successfully!',
-                    'recipe': {
-                        'user_id': user.id,
-                        'name': user.name,
-                        'username': user.username,
-                        'email': user.email,
-                        'password': user.password
-                    }
-                }), 201
-            except Exception as e:
-                return jsonify({'error': str(e)}), 500
+        from app.service.user import UserService
+        try:
+            result = UserService.add_user(username, email, name, password)
+            
+            if isinstance(result, dict) and 'error' in result:
+                return jsonify({'error': result['error']}), 400
+            
+            return jsonify({
+                'message': 'User added successfully!',
+                'User info': {
+                    'user_id': result.id,
+                    'name': result.name,
+                    'username': result.username,
+                    'email': result.email,
+                    'password': result.password
+                }
+            }), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
     @app.route('/search', methods=['GET'])
     def search_recipes_route():
         from app.service.recipe import RecipeService
-        ingredients = request.args.get('ingredients')
-        category = request.args.get('category')
-        recipes = RecipeService.search_recipes(ingredients, category)
-        # Convert recipes to dicts if needed
-        return jsonify([recipe.to_dict() for recipe in recipes])
+        
+        q = request.args.get('q') # Optional filter
+        
+        if not q:
+            return render_template('search.html')
+        try:
+            recipes = RecipeService.search_recipes(query=q)
+            results = [recipe.to_dict() for recipe in recipes] if recipes else []
+            
+            return jsonify({
+                'results': results,
+                'count': len(results),
+                'search_term': q
+            })
+            
+        except Exception as e:
+            return jsonify({'error': 'Search failed'}), 500
     
 
     @app.route('/login', methods=['POST'])
     def login():
-        data = request.get_json()
+        if request.content_type == 'application/json':
+            data = request.get_json()
+        else:
+            data = request.form
+            
         username = data.get('username')
         password = data.get('password')
 
@@ -137,6 +186,13 @@ def create_app():
         user = UserService.authenticate(username, password)
 
         if user:
+            # Store user information in session
+            session['user_id'] = user.id
+            session['username'] = user.username
+            session['email'] = user.email
+            session['name'] = user.name
+            session['logged_in'] = True
+            
             return jsonify({
                 'message': 'Login successful!',
                 'user': {
@@ -153,6 +209,24 @@ def create_app():
                 'note': 'Recovering your username or resetting your password is not available through this interface. '
                         'Please email myrecipieboxsupport@example.com to request assistance.'
             }), 401
+
+    @app.route('/logout', methods=['POST'])
+    def logout():
+        session.clear()
+        return jsonify({'message': 'Logged out successfully'}), 200
+
+    @app.route('/current_user', methods=['GET'])
+    def current_user():
+        if 'logged_in' in session and session['logged_in']:
+            return jsonify({
+                'logged_in': True,
+                'user_id': session['user_id'],
+                'username': session['username'],
+                'email': session['email'],
+                'name': session['name']
+            }), 200
+        else:
+            return jsonify({'logged_in': False}), 200
         
     @app.route('/random_recipe', methods=['GET'])
     def get_random_recipe():
