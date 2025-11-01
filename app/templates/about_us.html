@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - My Recipe Box</title>
+<title>About Us - My Recipe Box</title>
 <style>
 /* ________________________________ Base Layout (CAN COPY AND PASTE) ________________________________ */
 html, body {
@@ -144,62 +144,39 @@ main {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding: 40px 20px;
-    margin-top: -10px;
+    padding: 30px 20px;
+    width: 100%;
 }
 h1 {
     margin-bottom: 20px;
     text-align: center;
 }
-#loginForm {
-    background: transparent;
-    padding: 20px;
-    border-radius: 6px;
+section {
+    max-width: 800px;
     width: 100%;
-    max-width: 400px;
+    margin-bottom: 15px; /* slightly larger gap */
 }
-#loginForm div {
-    margin-bottom: 20px;
-}
-#loginForm label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-}
-#loginForm input[type="text"],
-#loginForm input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 1em;
-    box-sizing: border-box;
-}
-#loginForm button[type="submit"] {
-    width: 100%;
-    padding: 10px;
-    font-size: 1em;
-    border-radius: 4px;
-    border: none;
-    background-color: #ff6f61;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-#loginForm button[type="submit"]:hover {
-    background-color: #ff4b3e;
-}
-.links {
-    margin-top: 20px;
-    text-align: center;
-}
-.links a {
+section h2 {
+    margin-bottom: 8px;
     color: #ff6f61;
-    text-decoration: none;
-    font-weight: 500;
 }
-.links a:hover {
-    color: #ff4b3e;
+section p {
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 10px;
+}
+ul li {
+    margin-bottom: 6px;
+}
+/* Style HR line separator */
+hr {
+    border: 0;
+    border-top: 1px solid #28a745; /* green color */
+    margin: 15px 0; /* more spacing for better look */
 }
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
 
@@ -222,7 +199,7 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 <nav>
     <a href="/" class="logo">My Recipe Box</a>
-
+    
     <div class="nav-links">
         <a href="/">Home</a>
         <a href="/featured">Featured</a>
@@ -254,22 +231,34 @@ footer {
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
-    <h1>Login</h1>
-    <form method="POST" action="/login" id="loginForm">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" name="username" id="username" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required>
-        </div>
-        <button type="submit">Login</button>
-    </form>
-    <div class="links">
-        <a href="/signup">Don't have an account? Sign Up</a><br>
-        <a href="#" id="forgotLink">Forgot Username/Password?</a>
-    </div>
+    <h1>About Us</h1>
+
+    <section id="about">
+        <h2>About My Recipe Box</h2>
+        <p>Welcome to My Recipe Box, your go-to place for sharing and discovering delicious recipes! Whether you're a seasoned chef or just getting started in the kitchen, our platform is designed to inspire creativity, help you find new meal ideas, and store all your favorite recipes in one place.</p>
+        <p>Our goal is to bring food lovers together, providing a community space to swap recipes, share tips, and enjoy the beauty of homemade cooking. With easy-to-follow recipe listings, personalized collections, and a supportive environment, we hope to make every cook feel at home.</p>
+
+        <hr>
+
+        <h2>Contact Us</h2>
+        <p>Have any questions or need support? We're here to help! You can reach us through:</p>
+        <ul>
+            <li>Email: <a href="mailto:support@myrecipebox.com">support@myrecipebox.com</a></li>
+        </ul>
+        <p>We look forward to hearing from you!</p>
+
+        <hr>
+
+        <h2>Privacy Policy</h2>
+        <p>Your privacy is important to us. At My Recipe Box, we take data protection seriously and ensure your personal information is handled with the utmost care.</p>
+        <p>We do not sell, trade, or share your personal data with third parties without your consent, except where necessary to provide our services. For more details, please read our full privacy policy.</p>
+
+        <hr>
+
+        <h2>Terms and Conditions</h2>
+        <p>By using My Recipe Box, you agree to comply with our terms of service. These terms outline the rules for using the site, the responsibilities of users, and the rights we retain as the service provider.</p>
+        <p>We reserve the right to modify or update these terms at any time. Please review the full terms and conditions for more information.</p>
+    </section>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 
@@ -278,43 +267,6 @@ footer {
     &copy; 2025 My Recipe Box. All rights reserved.
 </footer>
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
-
-<!-- ________________________________ JS (UNIQUE) ________________________________ -->
-<script>
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.message) {
-            alert("🎉 Login successful!");
-            window.location.href = '/';
-        } else if (result.error) {
-            alert("❌ " + result.error);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert("⚠️ An unexpected error occurred during login.");
-    });
-});
-
-// Forgot Username/Password - show exact backend text
-document.getElementById('forgotLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    const backendMessage = 
-        "Password reset is not available through this interface. " +
-        "Please email myrecipieboxsupport@example.com to request a password reset.";
-    alert(backendMessage);
-});
-</script>
-<!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
 </body>
 </html>

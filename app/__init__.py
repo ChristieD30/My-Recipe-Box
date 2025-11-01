@@ -269,6 +269,13 @@ def create_app():
             return redirect(url_for("display_recipes", page=page))
 
         return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes)
+    
+    @app.route('/about')
+    def about():
+        try:
+            return render_template('about_us.html')
+        except Exception as e:
+            return f"Error loading About Us page: {str(e)}"
 
     return app
 
