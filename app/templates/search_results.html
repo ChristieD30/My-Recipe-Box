@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Display Recipes</title>
+<title>Search Recipes</title>
     <script>
         function confirmAndRefresh(event) {
             event.preventDefault(); // Stop normal form submission for now
@@ -19,7 +19,9 @@
     </script>
 </head>
 <body>
-<h1>Recipes</h1>
+<h1>Search Results for "{{ search_term }}"</h1>
+
+{% if recipe %}
     <form method="POST" onsubmit="confirmAndRefresh(event)">
         <label for="name">Name:</label><br>
         <input type="text" id="name" name="name" value="{{ recipe['name'] }}"><br><br>
@@ -32,16 +34,30 @@
         <label for="updated">Updated:</label><br>
         <input type="text" id="updated" name="updated" readonly value="{{ recipe['updated_at'].strftime('%m/%d/%Y %I:%M:%S %p') }}"><br><br>
         <input type="submit" value="Update">
+        <input type="hidden" name="recipe_id" value="{{ recipe['id'] }}">
+        <input type="hidden" name="page" value="{{ paginated_recipes.page }}">
     </form>
-    <!-- Navigation -->
+
+    <!-- Pagination -->
     <div>
         {% if paginated_recipes.has_prev %}
-            <a href="{{ url_for('display_recipes', page=paginated_recipes.prev_num) }}">« Previous</a>
+            <a href="{{ url_for('search_recipes', q=search_term, page=paginated_recipes.prev_num) }}">« Previous</a>
         {% endif %}
-
         {% if paginated_recipes.has_next %}
-            <a href="{{ url_for('display_recipes', page=paginated_recipes.next_num) }}"> Next »</a>
+            <a href="{{ url_for('search_recipes', q=search_term, page=paginated_recipes.next_num) }}">Next »</a>
         {% endif %}
     </div>
+{% else %}
+    <p>No recipes found for "{{ search_term }}".</p>
+{% endif %}
+
+    <br>
+    <form method="GET" action="/search">
+        <label for="q">Search:</label><br>
+        <input type="text" name="q" placeholder="Search recipes..." required>
+        <button type="submit">Search</button>
+    </form>
+
+<a href="/">Back to Home</a>
 </body>
-</html> 
+</html>
