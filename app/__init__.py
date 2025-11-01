@@ -147,26 +147,48 @@ def create_app():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    @app.route('/search', methods=['GET'])
-    def search_recipes_route():
+    @app.route('/search', methods=['GET','POST'])
+    def search_recipes():
         from app.service.recipe import RecipeService
-        
-        q = request.args.get('q') # Optional filter
-        
-        if not q:
-            return render_template('search.html')
-        try:
-            recipes = RecipeService.search_recipes(query=q)
-            results = [recipe.to_dict() for recipe in recipes] if recipes else []
-            
-            return jsonify({
-                'results': results,
-                'count': len(results),
-                'search_term': q
-            })
-            
-        except Exception as e:
-            return jsonify({'error': 'Search failed'}), 500
+
+        q = request.args.get('q', '')
+        page = request.args.get('page', 1, type=int)
+        per_page = 1
+
+        recipes_query = Recipe.query
+
+        if q:
+            search_term = f"%{q.lower()}%"
+            recipes_query = recipes_query.filter(
+                db.or_(
+                    Recipe.ingredients.ilike(search_term),
+                    Recipe.category.ilike(search_term),
+                    Recipe.name.ilike(search_term)
+                )
+            )
+
+        if request.method == "POST":
+            # Update recipe data
+            recipe_id = request.form["recipe_id"]
+            recipe = Recipe.query.get(recipe_id)
+            recipe.name = request.form["name"]
+            recipe.ingredients = request.form["ingredients"]
+            recipe.instructions = request.form["instructions"]
+            recipe.category = request.form["category"]
+            recipe.updated_at = datetime.now().astimezone()
+            db.session.commit()
+            return redirect(url_for("search_recipes", page=page))
+
+        paginated_recipes = recipes_query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
+        recipe = paginated_recipes.items[0] if paginated_recipes.items else None
+
+
+        return render_template(
+            'search_results.html',
+            recipe=recipe,
+            paginated_recipes=paginated_recipes,
+            search_term=q
+        )
     
 
     @app.route('/login', methods=['POST'])
