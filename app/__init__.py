@@ -298,6 +298,41 @@ def create_app():
             return render_template('about_us.html')
         except Exception as e:
             return f"Error loading About Us page: {str(e)}"
+        
+    @app.route('/add_recipes')
+    def add_recipes():
+        try:
+            return render_template('add_recipes.html')
+        except Exception as e:
+            return f"Error loading Add Recipes page: {str(e)}"
 
+    @app.route('/browse_recipes')
+    def browse_recipes():
+        try:
+            return render_template('browse_recipes.html')
+        except Exception as e:
+            return f"Error loading Browse Recipes page: {str(e)}"
+
+    @app.route('/faq')
+    def faq():
+        try:
+            return render_template('faq.html')
+        except Exception as e:
+            return f"Error loading FAQ page: {str(e)}"
+
+    @app.route('/favorites')
+    def favorites():
+        try:
+            return render_template('favorites.html')
+        except Exception as e:
+            return f"Error loading Favorites page: {str(e)}"
+
+    @app.route('/featured')
+    def featured():
+        try:
+            return render_template('featured.html')
+        except Exception as e:
+            return f"Error loading Featured page: {str(e)}"
+    
     return app
 
