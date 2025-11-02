@@ -138,21 +138,26 @@ nav {
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
+/* Main section layout for the Featured */
 main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* vertically center content */
-    align-items: center;     /* horizontally center content */
+    justify-content: center;
+    align-items: center;    
     padding: 40px 20px;
     margin-top: -10px;
     width: 100%;
 }
+
+/* Title */
 h1 {
     margin-bottom: 20px;
     text-align: center;
     line-height: 1.4;
 }
+
+/* Featured recipe container: recipe name, image, ingredients, and instructions */
 .featured-container {
     background: #fff;
     border-radius: 8px;
@@ -160,40 +165,46 @@ h1 {
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     max-width: 700px;
     width: 100%;
-    margin: 0 auto; /* center the box horizontally */
+    margin: 0 auto; 
     display: flex;
     flex-direction: column;
-    align-items: center; /* center the header + image */
+    align-items: center; 
 }
+
+/* Recipe title */
 .featured-container h2 {
     color: #ff6f61;
     margin-top: 0;
     text-align: center;
 }
+
+/* Recipe instructions and text format */
 .featured-container p {
     line-height: 1.6;
-    text-align: left; /* ensures instructions are left-aligned */
+    text-align: left; 
     width: 100%;
-    margin-top: 0px; /* smaller top spacing for better visual balance */
+    margin-top: 0px; 
 }
+
+/* Bold for text inside recipe content */
 .featured-container strong {
     color: #333;
 }
 
-/* Recipe image: centered placeholder with text properly aligned */
+/* Recipe image section */
 .recipe-image {
     width: 100%;
     max-width: 500px;
     height: auto;
-    aspect-ratio: 1 / 1; /* Keeps square and responsive */
-    background-color: #f2f2f2; /* This is the fallback color */
-    background-size: cover;    /* Ensures the image covers the container */
-    background-position: center; /* Centers the image */
+    aspect-ratio: 1 / 1; 
+    background-color: #f2f2f2;
+    background-size: cover;    
+    background-position: center; 
     border-radius: 6px;
-    margin: 15px auto; /* horizontally center */
+    margin: 15px auto; 
     display: flex;
-    justify-content: center;   /* Horizontally centers the text */
-    align-items: center;       /* Vertically centers the text */
+    justify-content: center;   
+    align-items: center;       
     color: #999;
     font-style: italic;
     font-size: 1.2em;
@@ -201,7 +212,7 @@ h1 {
     line-height: 1.2em;
 }
 
-/* Recipe meta: default styling (not bold or black) */
+/* For: prep time, cook time, total time. servings */
 .recipe-meta {
     text-align: center;
     font-size: 0.95em;
@@ -209,26 +220,31 @@ h1 {
     margin-bottom: 15px;
 }
 
-/* Make the words "Prep Time", "Cook Time", etc. bold, not the "N/A" values */
+/* Bold for above ^ */
 .recipe-meta .bold-label {
     font-weight: bold;
 }
 
-/* Divider line */
+/* Divider and ingredients */
 .recipe-ingredients {
     width: 100%;
-    text-align: left; /* align ingredients list to the left */
-    margin-top: 10px; /* slightly more than instructions to offset <hr> */
+    text-align: left; 
+    margin-top: 10px; 
 }
+
+/* Divider line */
 .recipe-ingredients hr {
     border: 1px solid #ccc;
-    margin: 0 0 15px 0; /* space only below divider */
+    margin: 0 0 15px 0; /* space below divider */
 }
+
+/* Ingredients list */
 .recipe-ingredients ul {
     padding-left: 20px;
     margin-top: 5px;
 }
 
+/* Refresh button */
 button.refresh-btn {
     margin-top: 20px;
     padding: 10px 16px;
@@ -326,11 +342,17 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
+<!-- Display featured recipe -->
 <main>
+    <!-- Display main title -->
     <h1 id="featuredTitle">Fetching your kitchen adventure...</h1>
+
+    <!-- Display CSS -->
     <div class="featured-container" id="featuredRecipe">
         <p>Loading featured recipe...</p>
     </div>
+
+    <!-- Refresh Button -->
     <button class="refresh-btn" onclick="loadFeaturedRecipe()">Show Another Recipe</button>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
@@ -342,9 +364,10 @@ footer {
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
+<!-- Fetch and display a random featured recipe -->
 <script>
 function loadFeaturedRecipe() {
-    fetch('/random_recipe')
+    fetch('/random_recipe') // Fetch a random recipe 
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -356,19 +379,19 @@ function loadFeaturedRecipe() {
             if (data.recipe) {
                 const recipe = data.recipe;
 
-                // Always show the title as two lines
+                // Display main title
                 title.innerHTML = "Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!";
 
-                // Automatically number instructions with "1.", "2.", "3." etc., and remove existing numbers
+                // Number each instruction 
                 const instructionsWithNumbers = recipe.instructions
                     .split('\n')
                     .map((instruction, index) => {
-                        // Remove any numbers at the start (e.g., "1." or "5.")
-                        const cleanedInstruction = instruction.replace(/^\d+\.\s*/, '');
+                        const cleanedInstruction = instruction.replace(/^\d+\.\s*/, ''); // remove existing numbers
                         return `${index + 1}. ${cleanedInstruction}`;
                     })
                     .join('<br>');
 
+                // Build the recipe content 
                 container.innerHTML = `
                     <h2>${recipe.name}</h2>
                     ${recipe.image ? `<div class="recipe-image" style="background-image: url('${recipe.image}');"></div>` : `<div class="recipe-image">No Image Available</div>`}
@@ -386,11 +409,13 @@ function loadFeaturedRecipe() {
                     <p><strong>Instructions:</strong><br>${instructionsWithNumbers}</p>
                 `;
             } else {
+                // Display error if no recipe found
                 title.textContent = "Oops!";
                 container.innerHTML = `<p style="color: red;">${data.error || "No recipe found."}</p>`;
             }
         })
         .catch(error => {
+            // Display an error message if fails
             console.error('Error fetching featured recipe:', error);
             document.getElementById('featuredTitle').textContent = "Oops!";
             document.getElementById('featuredRecipe').innerHTML = `
@@ -399,7 +424,7 @@ function loadFeaturedRecipe() {
         });
 }
 
-// Load one immediately
+// Automatically load recipe 
 loadFeaturedRecipe();
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->

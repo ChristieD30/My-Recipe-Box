@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FAQ - My Recipe Box</title>
+
 <style>
 /* ________________________________ Base Layout (CAN COPY AND PASTE) ________________________________ */
 html, body {
@@ -138,6 +139,7 @@ nav {
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
+/* Layout and style for FAQ page */
 main {
     flex: 1;
     display: flex;
@@ -147,39 +149,21 @@ main {
     padding: 30px 20px;
     width: 100%;
 }
+
+/* Title */
 h1 {
     margin-bottom: 20px;
     text-align: center;
 }
+
+/* Section for FAQ items */
 section {
     max-width: 800px;
     width: 100%;
-    margin-bottom: 15px; /* slightly larger gap */
-}
-section h2 {
-    margin-bottom: 8px;
-    color: #ff6f61;
-}
-section p {
-    line-height: 1.6;
-    margin-bottom: 10px;
-}
-ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin-bottom: 10px;
-}
-ul li {
-    margin-bottom: 6px;
-}
-/* Style HR line separator */
-hr {
-    border: 0;
-    border-top: 1px solid #28a745; /* green color */
-    margin: 15px 0; /* more spacing for better look */
+    margin-bottom: 15px; 
 }
 
-/* FAQ dropdown styling */
+/* FAQ border and hover */
 .faq-item {
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -191,6 +175,8 @@ hr {
 .faq-item:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
+
+/* Toggles answer */
 .faq-question {
     display: flex;
     justify-content: space-between;
@@ -204,12 +190,16 @@ hr {
     background-color: #ff6f61;
     color: #fff;
 }
+
+/* Arrow icon rotates when question clicked on */
 .faq-arrow {
     transition: transform 0.2s ease;
 }
 .faq-item.active .faq-arrow {
     transform: rotate(90deg);
 }
+
+/* Answer hidden by default + shows when question clicked on */
 .faq-answer {
     display: none;
     padding: 10px 16px 14px 16px;
@@ -266,15 +256,26 @@ footer {
 </style>
 
 <script>
-/* Simple JS to toggle FAQ dropdowns */
+/* ________________________________ JS (UNIQUE) ________________________________ */
+// FAQ dropdowns
 document.addEventListener("DOMContentLoaded", function() {
     const faqs = document.querySelectorAll(".faq-item");
+
     faqs.forEach(item => {
         item.querySelector(".faq-question").addEventListener("click", () => {
+            // Close current opened FAQ before opening a new one
+            faqs.forEach(otherItem => {
+                if (otherItem !== item) {
+                    otherItem.classList.remove("active");
+                }
+            });
+
+            // Toggle clicked item
             item.classList.toggle("active");
         });
     });
 });
+/* ________________________________ JS (UNIQUE) ________________________________ */
 </script>
 </head>
 
@@ -296,7 +297,7 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
         <a href="/favorites">Favorites</a>
         <a href="/about">About Us</a>
-        <a href="/faq">FAQ</a>
+        <a href="/faq" style="color: #ff6f61; font-weight: bold;">FAQ</a>
     </div>
 
     <div class="right-section">
@@ -315,11 +316,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
+    <!-- Main FAQ heading -->
     <h1>Frequently Asked Questions (FAQ)</h1>
 
+    <!-- FAQ section -->
     <section id="faq">
-        <h2>Frequently Asked Questions</h2>
-
+        <!-- Each FAQ listed -->
         <div class="faq-item">
             <div class="faq-question">What is My Recipe Box? <span class="faq-arrow">▶</span></div>
             <div class="faq-answer"><p>Placeholder answer text for the question about what My Recipe Box is.</p></div>
@@ -369,7 +371,6 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="faq-question">How can I delete my account? <span class="faq-arrow">▶</span></div>
             <div class="faq-answer"><p>Placeholder answer text for the question about deleting your account.</p></div>
         </div>
-
     </section>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->

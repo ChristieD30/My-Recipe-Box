@@ -137,27 +137,26 @@ nav {
 }
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
+
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
+/* Main content layout for About Us page */
 main {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding: 30px 20px;
-    width: 100%;
-    animation: fadeIn 0.6s ease;
+    padding: 40px 20px;
+    margin-top: -10px;
 }
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+
+/* Title */
 h1 {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
-/* Card-style sections */
+/* Card layout for About */
 .about-card {
     background-color: #fff;
     border: 1px solid #ddd;
@@ -169,26 +168,36 @@ h1 {
     width: 100%;
     transition: box-shadow 0.2s ease;
 }
+
+/* Hover effect for About */
 .about-card:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+/* Section headings inside */
 .about-card h2 {
     margin-bottom: 10px;
     color: #ff6f61;
 }
+
+/* Paragraph and list format */
 .about-card p, .about-card ul {
     line-height: 1.6;
     margin-bottom: 10px;
 }
+
+/* Unordered list */
 .about-card ul {
     list-style-type: none;
     padding-left: 0;
 }
+
+/* List item spacing */
 .about-card ul li {
     margin-bottom: 6px;
 }
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
+
 
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 footer {
@@ -202,6 +211,7 @@ footer {
 }
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 
+
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 @media screen and (max-width: 1024px) {
     nav {
@@ -210,6 +220,7 @@ footer {
         align-items: center; 
         padding: 12px 20px;
     }
+
     .nav-links {
         display: flex;
         justify-content: center; 
@@ -217,6 +228,7 @@ footer {
         gap: 15px;
         margin-top: 8px;
     }
+
     .right-section {
         display: flex;
         justify-content: center; 
@@ -224,6 +236,7 @@ footer {
         gap: 15px;
         width: 100%;
     }
+
     .search-form input[type="text"] {
         width: 150px; 
     }
@@ -268,37 +281,40 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
+<!-- Main content layout for About Us page -->
 <main>
     <h1>About Us</h1>
 
-    <section id="about">
-        <div class="about-card">
-            <h2>About My Recipe Box</h2>
-            <p>Welcome to My Recipe Box! Our website makes it easy to save your favorite recipes, discover new meal ideas, and share cooking inspiration with others. Want to know the best part? To get full access, all you need to do is create an account, and no payment is required.</p>
-            <p>Whether you are an experienced cook or just starting out, our goal is to provide a simple, welcoming space for everyone who loves food. Keep your recipes organized, explore new ideas, and enjoy cooking, sharing, and creating in one place.</p>
-        </div>
+    <!-- Card 1: About My Recipe Box -->
+    <div class="about-card">
+        <h2>About My Recipe Box</h2>
+        <p>Welcome to My Recipe Box! Our website makes it easy to save your favorite recipes, discover new meal ideas, and share cooking inspiration with others. Want to know the best part? To get full access, all you need to do is create an account, and no payment is required.</p>
+        <p>Whether you are an experienced cook or just starting out, our goal is to provide a simple, welcoming space for everyone who loves food. Keep your recipes organized, explore new ideas, and enjoy cooking, sharing, and creating in one place.</p>
+    </div>
 
-        <div class="about-card">
-            <h2>Contact Us</h2>
-            <p>Before reaching out, we recommend visiting our FAQ page, where you can find answers to commonly asked questions. Need additional support? We are here to help! You can reach us via:</p>
-            <ul>
-                <li>Email: <a href="mailto:support@myrecipebox.com">support@myrecipebox.com</a></li>
-            </ul>
-            <p>We look forward to hearing from you and will respond as quickly as possible! Thank you for your patience and understanding.</p>
-        </div>
+    <!-- Card 2: Contact Us -->
+    <div class="about-card">
+        <h2>Contact Us</h2>
+        <p>Before reaching out, we recommend visiting our FAQ page, where you can find answers to commonly asked questions. Need additional support? We are here to help! You can reach us via:</p>
+        <ul>
+            <li>Email: <a href="mailto:support@myrecipebox.com">support@myrecipebox.com</a></li>
+        </ul>
+        <p>We look forward to hearing from you and will respond as quickly as possible! Thank you for your patience and understanding.</p>
+    </div>
 
-        <div class="about-card">
-            <h2>Privacy Policy</h2>
-            <p>Your privacy is very important to us. At My Recipe Box, we take data protection seriously and ensure your personal information is handled with care.</p>
-            <p>We do not sell, trade, or share your personal data with third parties without your consent, unless they are necessary to provide our services.</p>
-        </div>
+    <!-- Card 3: Privacy Policy -->
+    <div class="about-card">
+        <h2>Privacy Policy</h2>
+        <p>Your privacy is very important to us. At My Recipe Box, we take data protection seriously and ensure your personal information is handled with care.</p>
+        <p>We do not sell, trade, or share your personal data with third parties without your consent, unless they are necessary to provide our services.</p>
+    </div>
 
-        <div class="about-card">
-            <h2>Terms and Conditions</h2>
-            <p>By using My Recipe Box, you agree to comply with our terms of service.</p>
-            <p>We reserve the right to modify or update these terms at any time without notice.</p>
-        </div>
-    </section>
+    <!-- Card 4: Terms and Conditions -->
+    <div class="about-card">
+        <h2>Terms and Conditions</h2>
+        <p>By using My Recipe Box, you agree to comply with our terms of service.</p>
+        <p>We reserve the right to modify or update these terms at any time without notice.</p>
+    </div>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 

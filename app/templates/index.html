@@ -138,6 +138,7 @@ nav {
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
+/* Main content layout for homepage and recipe submission */
 main {
     flex: 1;
     display: flex;
@@ -147,14 +148,20 @@ main {
     padding: 40px 20px;
     margin-top: -10px;
 }
+
+/* Title */
 h1 {
     margin-bottom: 20px;
     text-align: center;
 }
+
+/* Sections for user info, login prompt, and form */
 #userInfo, #loginPrompt {
     text-align: center;
     margin-top: 20px;
 }
+
+/* Recipe submission */
 #recipeForm {
     display: none;
     max-width: 600px;
@@ -163,14 +170,20 @@ h1 {
     padding: 20px;
     border-radius: 6px;
 }
+
+/* Form spacing */
 #recipeForm div {
     margin-bottom: 20px;
 }
+
+/* Labels for each input */
 #recipeForm label {
     display: block;
     margin-bottom: 6px;
     font-weight: 500;
 }
+
+/* Input, text area, and select */
 #recipeForm input, 
 #recipeForm textarea, 
 #recipeForm select {
@@ -181,9 +194,13 @@ h1 {
     font-size: 1em;
     box-sizing: border-box;
 }
+
+/* Text area height */
 #recipeForm textarea {
     min-height: 80px;
 }
+
+/* Submit button */
 #recipeForm input[type="submit"] {
     width: 100%;
     padding: 10px;
@@ -195,9 +212,13 @@ h1 {
     cursor: pointer;
     transition: background-color 0.2s;
 }
+
+/* Hover effect submit button */
 #recipeForm input[type="submit"]:hover {
     background-color: #ff4b3e;
 }
+
+/* Logout button */
 button.logout-btn {
     padding: 10px 14px;
     border: none;
@@ -208,6 +229,8 @@ button.logout-btn {
     font-size: 1em;
     transition: background-color 0.2s;
 }
+
+/* Hover effect logout button */
 button.logout-btn:hover {
     background-color: #ff4b3e;
 }
@@ -294,15 +317,22 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
+<!-- Main content layout for homepage and recipe submission -->
 <main>
     <h1>Welcome to My Recipe Box!</h1>
+
+    <!-- User info display -->
     <div id="userInfo" style="display: none;">
         <span id="welcomeMessage"></span>
         <button onclick="logout()" class="logout-btn">Logout</button>
     </div>
+
+    <!-- Login prompt if user not logged in -->
     <div id="loginPrompt" style="display: none;">
         <p>Please <a href="/login" style="color: #ff6f61; text-decoration: none; font-weight: 500;">login</a> to add recipes and access all features.</p>
     </div>
+
+    <!-- Recipe submission -->
     <div id="recipeForm">
         <h2>Add a New Recipe</h2>
         <form method="POST" action="/add_recipe">
@@ -343,22 +373,27 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
+// Fetch current user info + update interface 
 fetch('/current_user')
     .then(response => response.json())
     .then(data => {
         if (data.logged_in) {
+            // Logged in = show user info and recipe form
             document.getElementById('userInfo').style.display = 'block';
             document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.name || data.username}! 👋`;
             document.getElementById('recipeForm').style.display = 'block';
         } else {
+            // Logged out = show login prompt
             document.getElementById('loginPrompt').style.display = 'block';
         }
     })
     .catch(error => {
+        // Display error if login fails
         console.error('Error with login status:', error);
         document.getElementById('loginPrompt').style.display = 'block';
     });
 
+// Display logout
 function logout() {
     fetch('/logout', { method: 'POST' })
         .then(response => response.json())
