@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Recipe Box</title>
+<style>
+/* ________________________________ Base Layout (CAN COPY AND PASTE) ________________________________ */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fafafa;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+}
+/* ________________________________ Base Layout (CAN COPY AND PASTE) ________________________________ */
+
+/* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
+nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* Left | Center | Right */
+    align-items: center;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 12px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.logo {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    justify-self: start;
+}
+.nav-links {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    align-items: center;
+}
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 1.1em;
+    transition: color 0.2s;
+}
+.nav-links a:hover {
+    color: #ff6f61;
+}
+
+/* Dropdown menu */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    z-index: 1;
+    border-radius: 4px;
+}
+.dropdown-content a {
+    color: #333;
+    padding: 10px 14px;
+    text-decoration: none;
+    display: block;
+    font-size: 1em;
+}
+.dropdown-content a:hover {
+    background-color: #f2f2f2;
+    color: #ff6f61;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Right side: login/signup + search */
+.right-section {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 25px;
+}
+.auth-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 1.05em;
+}
+.auth-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.auth-links a:hover {
+    color: #ff6f61;
+}
+.auth-separator {
+    color: #bbb;
+    font-weight: 300;
+}
+.search-form {
+    display: flex;
+    align-items: center;
+}
+.search-form input[type="text"] {
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    font-size: 1em;
+    width: 200px;
+}
+.search-form button {
+    margin-left: 10px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff6f61;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+.search-form button:hover {
+    background-color: #ff4b3e;
+}
+/* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
+
+/* ________________________________ Main Content (UNIQUE) ________________________________ */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 40px 20px;
+    margin-top: -10px;
+}
+h1 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+#userInfo, #loginPrompt {
+    text-align: center;
+    margin-top: 20px;
+}
+#recipeForm {
+    display: none;
+    max-width: 600px;
+    width: 100%;
+    background: transparent;
+    padding: 20px;
+    border-radius: 6px;
+}
+#recipeForm div {
+    margin-bottom: 20px;
+}
+#recipeForm label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+#recipeForm input, 
+#recipeForm textarea, 
+#recipeForm select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+#recipeForm textarea {
+    min-height: 80px;
+}
+#recipeForm input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 4px;
+    border: none;
+    background-color: #ff6f61;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#recipeForm input[type="submit"]:hover {
+    background-color: #ff4b3e;
+}
+button.logout-btn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff6f61;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+button.logout-btn:hover {
+    background-color: #ff4b3e;
+}
+/* ________________________________ Main Content (UNIQUE) ________________________________ */
+
+/* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #ffffff;
+    color: #666;
+    font-size: 0.9em;
+    border-top: 1px solid #eee;
+    margin-top: auto;
+}
+/* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
+
+/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
+@media screen and (max-width: 1024px) {
+    nav {
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
+        padding: 12px 20px;
+    }
+
+    .nav-links {
+        display: flex;
+        justify-content: center; 
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 8px;
+    }
+
+    .right-section {
+        display: flex;
+        justify-content: center; 
+        margin-top: 12px;
+        gap: 15px;
+        width: 100%;
+    }
+
+    .search-form input[type="text"] {
+        width: 150px; 
+    }
+}
+/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
+</style>
+</head>
+
+<body>
+
+<!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
+<nav>
+    <a href="/" class="logo">My Recipe Box</a>
+    
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/featured">Featured</a>
+        <div class="dropdown">
+            <a href="#" class="no-link">Recipes ▾</a>
+            <div class="dropdown-content">
+                <a href="/browse_recipes">Browse Recipes</a>
+                <a href="/add_recipes">Add Recipe</a>
+            </div>
+        </div>
+        <a href="/favorites">Favorites</a>
+        <a href="/about">About Us</a>
+        <a href="/faq">FAQ</a>
+    </div>
+
+    <div class="right-section">
+        <div class="auth-links">
+            <a href="/login">Login</a>
+            <span class="auth-separator">|</span>
+            <a href="/signup">Sign Up</a>
+        </div>
+        <form method="GET" action="/search" class="search-form">
+            <input type="text" name="q" placeholder="Search recipes..." required>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</nav>
+<!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
+
+<!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
+<main>
+    <h1>Welcome to My Recipe Box!</h1>
+    <div id="userInfo" style="display: none;">
+        <span id="welcomeMessage"></span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+    </div>
+    <div id="loginPrompt" style="display: none;">
+        <p>Please <a href="/login" style="color: #ff6f61; text-decoration: none; font-weight: 500;">login</a> to add recipes and access all features.</p>
+    </div>
+    <div id="recipeForm">
+        <h2>Add a New Recipe</h2>
+        <form method="POST" action="/add_recipe">
+            <div>
+                <label for="name">Recipe Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div>
+                <label for="ingredients">Ingredients:</label>
+                <textarea id="ingredients" name="ingredients" required></textarea>
+            </div>
+            <div>
+                <label for="category">Category:</label>
+                <select id="category" name="category">
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Dessert">Dessert</option>
+                    <option value="Snack">Snack</option>
+                    <option value="Uncategorized">Uncategorized</option>
+                </select>
+            </div>
+            <div>
+                <label for="instructions">Instructions:</label>
+                <textarea id="instructions" name="instructions" required></textarea>
+            </div>
+            <input type="submit" value="Add Recipe">
+        </form>
+    </div>
+</main>
+<!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
+
+<!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
+<footer>
+    &copy; 2025 My Recipe Box. All rights reserved.
+</footer>
+<!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
+
+<!-- ________________________________ JS (UNIQUE) ________________________________ -->
+<script>
+fetch('/current_user')
+    .then(response => response.json())
+    .then(data => {
+        if (data.logged_in) {
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.name || data.username}! 👋`;
+            document.getElementById('recipeForm').style.display = 'block';
+        } else {
+            document.getElementById('loginPrompt').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error with login status:', error);
+        document.getElementById('loginPrompt').style.display = 'block';
+    });
+
+function logout() {
+    fetch('/logout', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert('Logged out successfully!');
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error logging out:', error);
+        });
+}
+</script>
+<!-- ________________________________ JS (UNIQUE) ________________________________ -->
+
+</body>
+</html>
