@@ -146,37 +146,47 @@ main {
     align-items: center;
     padding: 30px 20px;
     width: 100%;
+    animation: fadeIn 0.6s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 h1 {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     text-align: center;
 }
-section {
+
+/* Card-style sections */
+.about-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
     max-width: 800px;
     width: 100%;
-    margin-bottom: 15px; /* slightly larger gap */
+    transition: box-shadow 0.2s ease;
 }
-section h2 {
-    margin-bottom: 8px;
+.about-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.about-card h2 {
+    margin-bottom: 10px;
     color: #ff6f61;
 }
-section p {
+.about-card p, .about-card ul {
     line-height: 1.6;
     margin-bottom: 10px;
 }
-ul {
+.about-card ul {
     list-style-type: none;
     padding-left: 0;
-    margin-bottom: 10px;
 }
-ul li {
+.about-card ul li {
     margin-bottom: 6px;
-}
-/* Style HR line separator */
-hr {
-    border: 0;
-    border-top: 1px solid #28a745; /* green color */
-    margin: 15px 0; /* more spacing for better look */
 }
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
 
@@ -200,7 +210,6 @@ footer {
         align-items: center; 
         padding: 12px 20px;
     }
-
     .nav-links {
         display: flex;
         justify-content: center; 
@@ -208,7 +217,6 @@ footer {
         gap: 15px;
         margin-top: 8px;
     }
-
     .right-section {
         display: flex;
         justify-content: center; 
@@ -216,7 +224,6 @@ footer {
         gap: 15px;
         width: 100%;
     }
-
     .search-form input[type="text"] {
         width: 150px; 
     }
@@ -265,30 +272,32 @@ footer {
     <h1>About Us</h1>
 
     <section id="about">
-        <h2>About My Recipe Box</h2>
-        <p>Welcome to My Recipe Box, your go-to place for sharing and discovering delicious recipes! Whether you're a seasoned chef or just getting started in the kitchen, our platform is designed to inspire creativity, help you find new meal ideas, and store all your favorite recipes in one place.</p>
-        <p>Our goal is to bring food lovers together, providing a community space to swap recipes, share tips, and enjoy the beauty of homemade cooking. With easy-to-follow recipe listings, personalized collections, and a supportive environment, we hope to make every cook feel at home.</p>
+        <div class="about-card">
+            <h2>About My Recipe Box</h2>
+            <p>Welcome to My Recipe Box! Our website makes it easy to save your favorite recipes, discover new meal ideas, and share cooking inspiration with others. Want to know the best part? To get full access, all you need to do is create an account, and no payment is required.</p>
+            <p>Whether you are an experienced cook or just starting out, our goal is to provide a simple, welcoming space for everyone who loves food. Keep your recipes organized, explore new ideas, and enjoy cooking, sharing, and creating in one place.</p>
+        </div>
 
-        <hr>
+        <div class="about-card">
+            <h2>Contact Us</h2>
+            <p>Before reaching out, we recommend visiting our FAQ page, where you can find answers to commonly asked questions. Need additional support? We are here to help! You can reach us via:</p>
+            <ul>
+                <li>Email: <a href="mailto:support@myrecipebox.com">support@myrecipebox.com</a></li>
+            </ul>
+            <p>We look forward to hearing from you and will respond as quickly as possible! Thank you for your patience and understanding.</p>
+        </div>
 
-        <h2>Contact Us</h2>
-        <p>Have any questions or need support? We're here to help! You can reach us through:</p>
-        <ul>
-            <li>Email: <a href="mailto:support@myrecipebox.com">support@myrecipebox.com</a></li>
-        </ul>
-        <p>We look forward to hearing from you!</p>
+        <div class="about-card">
+            <h2>Privacy Policy</h2>
+            <p>Your privacy is very important to us. At My Recipe Box, we take data protection seriously and ensure your personal information is handled with care.</p>
+            <p>We do not sell, trade, or share your personal data with third parties without your consent, unless they are necessary to provide our services.</p>
+        </div>
 
-        <hr>
-
-        <h2>Privacy Policy</h2>
-        <p>Your privacy is important to us. At My Recipe Box, we take data protection seriously and ensure your personal information is handled with the utmost care.</p>
-        <p>We do not sell, trade, or share your personal data with third parties without your consent, except where necessary to provide our services. For more details, please read our full privacy policy.</p>
-
-        <hr>
-
-        <h2>Terms and Conditions</h2>
-        <p>By using My Recipe Box, you agree to comply with our terms of service. These terms outline the rules for using the site, the responsibilities of users, and the rights we retain as the service provider.</p>
-        <p>We reserve the right to modify or update these terms at any time. Please review the full terms and conditions for more information.</p>
+        <div class="about-card">
+            <h2>Terms and Conditions</h2>
+            <p>By using My Recipe Box, you agree to comply with our terms of service.</p>
+            <p>We reserve the right to modify or update these terms at any time without notice.</p>
+        </div>
     </section>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
