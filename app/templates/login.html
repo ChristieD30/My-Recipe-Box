@@ -335,26 +335,29 @@ footer {
 <!-- ________________________________ JavaScript for Login (UNIQUE) ________________________________ -->
 <script>
 /* Form submission */
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevent default form submission
-
-    /* Get values */
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-
-    /* Check if empty */
-    if(!username || !password){
-        alert("Please fill in both username and password.");
-        return;
-    }
-
-    alert("Login attempt with username: " + username);
-});
-
-/* Forgot Password/Username */
-document.getElementById('forgotLink').addEventListener('click', function(e){
+document.getElementById('loginForm').addEventListener('submit', 
+function(e) {
     e.preventDefault();
-    alert("Redirecting to password recovery page...");
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.message) {
+            alert("🎉 Login successful!");
+            window.location.href = '/';
+        } else if (result.error) {
+            alert("❌ " + result.error);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("⚠️ An unexpected error occurred during login.");
+    });
 });
 </script>
 <!-- ________________________________ JavaScript for Login (UNIQUE) ________________________________ -->
