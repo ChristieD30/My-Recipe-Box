@@ -136,6 +136,8 @@ nav {
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
+
+/* Layout for Sign-Up page */
 main {
     flex: 1;
     display: flex;
@@ -145,10 +147,14 @@ main {
     padding: 40px 20px;
     margin-top: -10px;
 }
+
+/* Title */
 h1 {
     margin-bottom: 20px;
     text-align: center;
 }
+
+/* Sign-Up form */
 #signupForm {
     background: transparent;
     padding: 20px;
@@ -156,14 +162,20 @@ h1 {
     width: 100%;
     max-width: 400px;
 }
+
+/* Space between input fields */
 #signupForm div {
     margin-bottom: 20px;
 }
+
+/* Labels for form fields */
 #signupForm label {
     display: block;
     margin-bottom: 6px;
     font-weight: 500;
 }
+
+/* Input fields for user data */
 #signupForm input[type="text"],
 #signupForm input[type="password"],
 #signupForm input[type="email"] {
@@ -174,6 +186,8 @@ h1 {
     font-size: 1em;
     box-sizing: border-box;
 }
+
+/* Submit button */
 #signupForm button[type="submit"] {
     width: 100%;
     padding: 10px;
@@ -185,18 +199,25 @@ h1 {
     cursor: pointer;
     transition: background-color 0.2s;
 }
+
+/* Hover effect for Sign-Up button */
 #signupForm button[type="submit"]:hover {
     background-color: #ff4b3e;
 }
+
+/* Link section under the form */
 .links {
     margin-top: 20px;
     text-align: center;
 }
+
+/* Link */
 .links a {
     color: #ff6f61;
     text-decoration: none;
     font-weight: 500;
 }
+
 .links a:hover {
     color: #ff4b3e;
 }
@@ -283,26 +304,40 @@ footer {
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
+    <!-- Title -->
     <h1>Sign Up</h1>
+
+    <!-- Registration form -->
     <form id="signupForm">
+        <!-- Username -->
         <div>
             <label for="username">Username:</label>
             <input type="text" name="username" id="username" required>
         </div>
+
+        <!-- Full name -->
         <div>
             <label for="name">Full Name:</label>
             <input type="text" name="name" id="name" required>
         </div>
+
+        <!-- Email -->
         <div>
             <label for="email">Email:</label>
             <input type="email" name="email" id="email" required>
         </div>
+
+        <!-- Password -->
         <div>
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" required>
         </div>
+
+        <!-- Submit button -->
         <button type="submit">Sign Up</button>
     </form>
+
+    <!-- Login link -->
     <div class="links">
         <a href="/login">Already have an account? Login</a>
     </div>
@@ -317,15 +352,21 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
+/* Sign-up submission */
 document.getElementById('signupForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form from refreshing the page
+
+    /* Get values */
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
+
+    /* Create user account */
     fetch('/add_user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     })
+    /* Server response */
     .then(res => res.json())
     .then(result => {
         if (result.error) {
@@ -335,6 +376,7 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
             window.location.href = '/login';
         }
     })
+    /* Error message */
     .catch(err => {
         console.error(err);
         alert("⚠️ An unexpected error occurred. Please try again.");

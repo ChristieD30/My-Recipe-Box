@@ -53,8 +53,6 @@ nav {
 .nav-links a:hover {
     color: #ff6f61;
 }
-
-/* Dropdown menu */
 .dropdown {
     position: relative;
     display: inline-block;
@@ -82,8 +80,6 @@ nav {
 .dropdown:hover .dropdown-content {
     display: block;
 }
-
-/* Right side: login/signup + search */
 .right-section {
     display: flex;
     align-items: center;
@@ -138,34 +134,47 @@ nav {
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
+/* Main content layout for Login page */
 main {
-    flex: 1;
+    flex: 1; 
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
+    justify-content: flex-start; 
+    align-items: center; 
     padding: 40px 20px;
     margin-top: -10px;
 }
+
+/* Title */
 h1 {
     margin-bottom: 20px;
     text-align: center;
 }
+
+/* Login container */
 #loginForm {
-    background: transparent;
+    display: flex;
+    flex-direction: column;
+    background: transparent; /* Transparent background for clean look */
     padding: 20px;
     border-radius: 6px;
     width: 100%;
-    max-width: 400px;
+    max-width: 400px; /* Responsive max width */
 }
+
+/* Form field */
 #loginForm div {
     margin-bottom: 20px;
 }
+
+/* Field labels */
 #loginForm label {
     display: block;
     margin-bottom: 6px;
     font-weight: 500;
 }
+
+/* Input for username and password */
 #loginForm input[type="text"],
 #loginForm input[type="password"] {
     width: 100%;
@@ -175,6 +184,8 @@ h1 {
     font-size: 1em;
     box-sizing: border-box;
 }
+
+/* Submit button */
 #loginForm button[type="submit"] {
     width: 100%;
     padding: 10px;
@@ -186,9 +197,13 @@ h1 {
     cursor: pointer;
     transition: background-color 0.2s;
 }
+
+/* Hover effect for submit button */
 #loginForm button[type="submit"]:hover {
     background-color: #ff4b3e;
 }
+
+/* Links */
 .links {
     margin-top: 20px;
     text-align: center;
@@ -286,20 +301,27 @@ footer {
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
     <h1>Login</h1>
+
+    <!-- Login -->
     <form method="POST" action="/login" id="loginForm">
+        <!-- Username -->
         <div>
             <label for="username">Username:</label>
             <input type="text" name="username" id="username" required>
         </div>
+        <!-- Password -->
         <div>
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" required>
         </div>
+        <!-- Submit button -->
         <button type="submit">Login</button>
     </form>
+
+    <!-- Links -->
     <div class="links">
-        <a href="/signup">Don't have an account? Sign Up</a><br>
-        <a href="#" id="forgotLink">Forgot Username/Password?</a>
+        <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+        <p><a href="#" id="forgotLink">Forgot Username/Password?</a></p>
     </div>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
@@ -310,42 +332,32 @@ footer {
 </footer>
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
 
-<!-- ________________________________ JS (UNIQUE) ________________________________ -->
+<!-- ________________________________ JavaScript for Login (UNIQUE) ________________________________ -->
 <script>
+/* Form submission */
 document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.message) {
-            alert("🎉 Login successful!");
-            window.location.href = '/';
-        } else if (result.error) {
-            alert("❌ " + result.error);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert("⚠️ An unexpected error occurred during login.");
-    });
+    e.preventDefault(); // Prevent default form submission
+
+    /* Get values */
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    /* Check if empty */
+    if(!username || !password){
+        alert("Please fill in both username and password.");
+        return;
+    }
+
+    alert("Login attempt with username: " + username);
 });
 
-// Forgot Username/Password - show exact backend text
-document.getElementById('forgotLink').addEventListener('click', function(e) {
+/* Forgot Password/Username */
+document.getElementById('forgotLink').addEventListener('click', function(e){
     e.preventDefault();
-    const backendMessage = 
-        "Password reset is not available through this interface. " +
-        "Please email myrecipieboxsupport@example.com to request a password reset.";
-    alert(backendMessage);
+    alert("Redirecting to password recovery page...");
 });
 </script>
-<!-- ________________________________ JS (UNIQUE) ________________________________ -->
+<!-- ________________________________ JavaScript for Login (UNIQUE) ________________________________ -->
 
 </body>
 </html>
