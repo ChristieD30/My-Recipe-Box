@@ -1,41 +1,60 @@
 <html>
 <head>
-<title>Search Recipes</title>
+    <title>Search Recipes</title>
     <script>
+        // Confirm before updating a recipe
         function confirmAndRefresh(event) {
             event.preventDefault(); // Stop normal form submission for now
-
-            // Ask user for confirmation
             const confirmed = confirm("Are you sure you want to update this recipe?");
-
             if (confirmed) {
-                // Submit form if confirmed
                 event.target.submit();
             } else {
-                // Refresh page if cancelled
                 location.reload();
             }
         }
     </script>
 </head>
+
 <body>
+
 <h1>Search Results for "{{ search_term }}"</h1>
 
 {% if recipe %}
+    <!-- Update Recipe Form -->
     <form method="POST" onsubmit="confirmAndRefresh(event)">
         <label for="name">Name:</label><br>
         <input type="text" id="name" name="name" value="{{ recipe['name'] }}"><br><br>
+
         <label for="ingredients">Ingredients:</label><br>
         <textarea id="ingredients" name="ingredients" rows="14" cols="90">{{ recipe['ingredients'] }}</textarea><br><br>
+
         <label for="instructions">Instructions:</label><br>
         <textarea id="instructions" name="instructions" rows="14" cols="90">{{ recipe['instructions'] }}</textarea><br><br>
+
         <label for="category">Category:</label><br>
         <input type="text" id="category" name="category" value="{{ recipe['category'] }}"><br><br>
+
         <label for="updated">Updated:</label><br>
-        <input type="text" id="updated" name="updated" readonly value="{{ recipe['updated_at'].strftime('%m/%d/%Y %I:%M:%S %p') }}"><br><br>
+        <input type="text" id="updated" name="updated" readonly 
+               value="{{ recipe['updated_at'].strftime('%m/%d/%Y %I:%M:%S %p') }}"><br><br>
+
         <input type="submit" value="Update">
         <input type="hidden" name="recipe_id" value="{{ recipe['id'] }}">
         <input type="hidden" name="page" value="{{ paginated_recipes.page }}">
+    </form>
+
+    <!-- Favorite Toggle Form -->
+    <form method="POST">
+        <input type="hidden" name="recipe_id" value="{{ recipe['id'] }}">
+        <input type="hidden" name="favorite" value="true">
+        <label>
+            <input 
+                type="checkbox"
+                onchange="this.form.submit()"
+                {% if is_favorite %}checked{% endif %}
+            >
+            Favorite
+        </label>
     </form>
 
     <!-- Pagination -->
@@ -47,17 +66,21 @@
             <a href="{{ url_for('search_recipes', q=search_term, page=paginated_recipes.next_num) }}">Next »</a>
         {% endif %}
     </div>
+
 {% else %}
     <p>No recipes found for "{{ search_term }}".</p>
 {% endif %}
 
-    <br>
-    <form method="GET" action="/search">
-        <label for="q">Search:</label><br>
-        <input type="text" name="q" placeholder="Search recipes..." required>
-        <button type="submit">Search</button>
-    </form>
+<br>
+
+<!-- Search Form -->
+<form method="GET" action="/search">
+    <label for="q">Search:</label><br>
+    <input type="text" name="q" placeholder="Search recipes..." required>
+    <button type="submit">Search</button>
+</form>
 
 <a href="/">Back to Home</a>
+
 </body>
 </html>

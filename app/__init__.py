@@ -150,7 +150,8 @@ def create_app():
     @app.route('/search', methods=['GET','POST'])
     def search_recipes():
         from app.service.recipe import RecipeService
-
+        from app.service.favorites import FavoriteService
+        from app.model.favorites import Favorite
         q = request.args.get('q', '')
         page = request.args.get('page', 1, type=int)
         per_page = 1
@@ -167,29 +168,47 @@ def create_app():
                 )
             )
 
-        if request.method == "POST":
-            # Update recipe data
-            recipe_id = request.form["recipe_id"]
-            recipe = Recipe.query.get(recipe_id)
-            recipe.name = request.form["name"]
-            recipe.ingredients = request.form["ingredients"]
-            recipe.instructions = request.form["instructions"]
-            recipe.category = request.form["category"]
-            recipe.updated_at = datetime.now().astimezone()
-            db.session.commit()
-            return redirect(url_for("search_recipes", page=page))
+        user_id = session.get('user_id')  # get user id from session
 
+        # --- Handle POST actions (update recipe or toggle favorite) ---
+        if request.method == "POST":
+            recipe_id = request.form.get("recipe_id")
+            recipe = Recipe.query.get(recipe_id)
+
+            if "favorite" in request.form:
+                # Toggle favorite
+                existing_fav = Favorite.query.filter_by(recipe_id=recipe_id, user_id=user_id).first()
+                if existing_fav:
+                    FavoriteService.remove_favorite(recipe_id, user_id)
+                else:
+                    FavoriteService.add_favorite(recipe_id, user_id)
+            else:
+                # Update recipe
+                recipe.name = request.form.get("name")
+                recipe.ingredients = request.form.get("ingredients")
+                recipe.instructions = request.form.get("instructions")
+                recipe.category = request.form.get("category")
+                recipe.updated_at = datetime.now().astimezone()
+                db.session.commit()
+
+            return redirect(url_for("search_recipes", q=q, page=page))
+
+        # --- Pagination ---
         paginated_recipes = recipes_query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
         recipe = paginated_recipes.items[0] if paginated_recipes.items else None
 
+        # --- Determine if recipe is already a favorite ---
+        is_favorite = False
+        if recipe and user_id:
+            is_favorite = Favorite.query.filter_by(recipe_id=recipe.id, user_id=user_id).first() is not None
 
         return render_template(
             'search_results.html',
             recipe=recipe,
             paginated_recipes=paginated_recipes,
-            search_term=q
+            search_term=q,
+            is_favorite=is_favorite
         )
-    
 
     @app.route('/login', methods=['POST'])
     def login():
