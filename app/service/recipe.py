@@ -1,17 +1,15 @@
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-
 from app.model.recipes import Recipe
 from app.enums import Category
 from app import db
-from app.model.recipes import Recipe
+
 
 class RecipeService:
     @staticmethod
     def add_recipe(name, ingredients, instructions, category, user_id=None):
         try:
-            # Check if recipe with the same name exists for this user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please rename it."
@@ -24,7 +22,7 @@ class RecipeService:
                 ingredients=ingredients,
                 instructions=instructions,
                 category=category,
-                user_id=user_id # can't leave this null
+                user_id=user_id  # can't leave this null
             )
             db.session.add(new_recipe)
             db.session.commit()
@@ -42,26 +40,22 @@ class RecipeService:
             "error": "Recipe deletion is not available through this interface. "
                      "Please email myrecipieboxsupport@example.com to request recipe deletion."
         }
-    
+
     @staticmethod
     def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None):
         try:
-            # Fetch the original recipe
             original = Recipe.query.filter_by(id=_id).first()
             if not original:
                 return None, "Unable to duplicate recipe."
 
-            # Use original data from orginal recipe
             name = _name or original.name + " (Copy)"
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
 
-            # Check if the duplicated recipe name already exists for this user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please choose a different name."
 
-            # Create new duplicated recipe owned by the user duplicating it
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
@@ -71,7 +65,6 @@ class RecipeService:
 
             db.session.add(new_recipe)
             db.session.commit()
-
             message = f"Your updated recipe '{name}' has been created as a duplicate."
             return new_recipe, message
 
@@ -82,13 +75,9 @@ class RecipeService:
 
     @staticmethod
     def search_recipes(query=None, category=None):
-        """
-        Modern search: searches across ingredients, category, and recipe name
-        """
+        """Modern search: searches across ingredients, category, and recipe name."""
         recipes_query = Recipe.query
-        
         if query:
-            # Search across multiple fields
             search_term = f"%{query.lower()}%"
             recipes_query = recipes_query.filter(
                 db.or_(
@@ -97,17 +86,18 @@ class RecipeService:
                     Recipe.name.ilike(search_term)
                 )
             )
-        
         if category:
             recipes_query = recipes_query.filter(Recipe.category.ilike(f"%{category}%"))
-        
         return recipes_query.all()
 
     @staticmethod
-    def get_random_recipe():
-        recipe = Recipe.query.order_by(db.func.random()).first()
+    def get_random_recipe(exclude_ids=None):
+        """Fetch one random recipe from the database."""
+        query = Recipe.query
+        if exclude_ids:
+            query = query.filter(~Recipe.id.in_(exclude_ids))
+        recipe = query.order_by(db.func.random()).first()
         if recipe:
-            return recipe, f"Hello there! Your random kitchen adventure awaits. Try it before it vanishes!\n"
+            return recipe, "Hello there! Your random kitchen adventure awaits. Try it before it vanishes!\n"
         else:
             return None, "No recipes found."
-

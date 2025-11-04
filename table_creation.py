@@ -148,7 +148,7 @@ def create_tables():
             'Lentil Mushroom Bolognese',
             '1 lb whole grain spaghetti\n2 cups brown lentils, cooked\n16 oz mushrooms, finely chopped\n1 onion, diced\n4 cloves garlic, minced\n2 cans (14 oz each) crushed tomatoes\n3 tbsp olive oil\n2 tbsp nutritional yeast\n1 tsp dried basil\n1 tsp dried oregano\n1/2 tsp red pepper flakes\nSalt and pepper to taste',
             '1. Cook spaghetti according to package directions\n2. In a large pan, heat olive oil and sauté onion and garlic until soft\n3. Add mushrooms and cook until they release their moisture\n4. Add cooked lentils, tomatoes, and herbs\n5. Simmer for 20 minutes, stirring occasionally\n6. Add nutritional yeast and season with salt and pepper\n7. Serve over spaghetti with extra nutritional yeast if desired',
-            'Main',
+            Category.DINNER.value,
             admin_id
         ),
         (

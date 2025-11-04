@@ -182,6 +182,18 @@ def create_app():
                     FavoriteService.remove_favorite(recipe_id, user_id)
                 else:
                     FavoriteService.add_favorite(recipe_id, user_id)
+                # Recalculate favorite status
+                is_favorite = FavoriteService.is_favorite(recipe_id, user_id)
+
+                # Render template immediately with updated favorite
+                return render_template(
+                    'search_results.html',
+                    recipe=recipe,
+                    paginated_recipes=paginated_recipes,
+                    search_term=q,
+                    is_favorite=is_favorite
+                )
+
             else:
                 # Update recipe
                 recipe.name = request.form.get("name")
@@ -272,6 +284,7 @@ def create_app():
     @app.route('/random_recipe', methods=['GET'])
     def get_random_recipe():
         from app.service.recipe import RecipeService
+
         recipe, message = RecipeService.get_random_recipe()
         if recipe:
             return jsonify({
@@ -348,10 +361,74 @@ def create_app():
 
     @app.route('/featured')
     def featured():
-        try:
-            return render_template('featured.html')
-        except Exception as e:
-            return f"Error loading Featured page: {str(e)}"
+        from app.model.recipes import Recipe
+        from app import db
+
+        # Get a random recipe from the database
+        recipe = Recipe.query.order_by(db.func.random()).first()
+
+        return render_template('featured.html', recipe=recipe)
+
+    @app.route('/is_favorite/<int:recipe_id>', methods=['GET'])
+    def is_favorite(recipe_id):
+        if 'logged_in' not in session or not session['logged_in']:
+            return jsonify({'is_favorite': False}), 200
+
+        user_id = session['user_id']
+        from app.service.favorites import FavoriteService
+        is_fav = FavoriteService.is_favorite(recipe_id, user_id)
+        return jsonify({'is_favorite': is_fav}), 200
     
+    @app.route('/remove_favorite', methods=['POST'])
+    def remove_favorite():
+        if 'logged_in' not in session or not session['logged_in']:
+            return jsonify({'error': 'Login required'}), 401
+
+        recipe_id = request.form.get('recipe_id') or request.json.get('recipe_id')
+        user_id = session['user_id']
+
+        from app.service.favorites import FavoriteService
+        FavoriteService.remove_favorite(recipe_id, user_id)
+    
+        return jsonify({'message': 'Favorite removed', 'recipe_id': recipe_id}), 200
+    
+    @app.route('/add_favorite', methods=['POST'])
+    def add_favorite():
+        if 'logged_in' not in session or not session['logged_in']:
+            return jsonify({'error': 'Login required'}), 401
+
+        recipe_id = request.form.get('recipe_id') or request.json.get('recipe_id')
+        user_id = session['user_id']
+
+        from app.service.favorites import FavoriteService
+        try:
+            favorite = FavoriteService.add_favorite(recipe_id, user_id)
+            return jsonify({'message': 'Favorite added', 'recipe_id': recipe_id}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    @app.route('/all_recipe_ids', methods=['GET'])
+    def get_all_recipe_ids():
+        from app.service.recipe import Recipe
+        ids = [r.id for r in Recipe.query.all()]
+        return jsonify({'recipe_ids': ids}), 200
+    
+    @app.route('/get_recipe_by_id/<int:recipe_id>', methods=['GET'])
+    def get_recipe_by_id(recipe_id):
+        from app.models import Recipe
+        recipe = Recipe.query.get(recipe_id)
+        if recipe:
+            return jsonify({
+                'recipe': {
+                    'recipe_id': recipe.id,
+                    'name': recipe.name,
+                    'ingredients': recipe.ingredients,
+                    'instructions': recipe.instructions,
+                    'user_id': recipe.user_id
+                }
+            }), 200
+        else:
+            return jsonify({'error': 'Recipe not found'}), 404
+
     return app
 
