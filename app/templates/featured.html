@@ -191,11 +191,10 @@ h1 {
     color: #333;
 }
 
-/* Recipe image section */
+/* Recipe image */
 .recipe-image {
     width: 100%;
     max-width: 500px;
-    height: auto;
     aspect-ratio: 1 / 1; 
     background-color: #f2f2f2;
     background-size: cover;    
@@ -209,7 +208,6 @@ h1 {
     font-style: italic;
     font-size: 1.2em;
     text-align: center;
-    line-height: 1.2em;
 }
 
 /* For: prep time, cook time, total time. servings */
@@ -235,7 +233,7 @@ h1 {
 /* Divider line */
 .recipe-ingredients hr {
     border: 1px solid #ccc;
-    margin: 0 0 15px 0; /* space below divider */
+    margin: 0 0 15px 0;
 }
 
 /* Ingredients list */
@@ -273,6 +271,68 @@ footer {
 }
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 
+/* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
+.favorite-star {
+    font-size: 1.8em;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.favorite-star.favorited {
+    color: gold;
+}
+.favorite-star:hover {
+    color: gold;
+}
+#loginPopup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+#loginPopup .popup-content {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+#loginPopup h2 {
+    color: #ff6f61;
+}
+/* X close button */
+#loginPopup .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.5em;
+    color: #666;
+    cursor: pointer;
+}
+#loginPopup .close-btn:hover {
+    color: #ff6f61;
+}
+#loginPopup button {
+    margin: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff6f61;
+    color: white;
+    cursor: pointer;
+}
+#loginPopup button:hover {
+    background-color: #ff4b3e;
+}
+/* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
+
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 @media screen and (max-width: 1024px) {
     nav {
@@ -281,23 +341,15 @@ footer {
         align-items: center; 
         padding: 12px 20px;
     }
-
     .nav-links {
-        display: flex;
-        justify-content: center; 
         flex-wrap: wrap;
         gap: 15px;
         margin-top: 8px;
     }
-
     .right-section {
-        display: flex;
-        justify-content: center; 
         margin-top: 12px;
         gap: 15px;
-        width: 100%;
     }
-
     .search-form input[type="text"] {
         width: 150px; 
     }
@@ -306,12 +358,11 @@ footer {
 </style>
 </head>
 
-<body>
+<body data-logged-in="false">
 
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 <nav>
     <a href="/" class="logo">My Recipe Box</a>
-    
     <div class="nav-links">
         <a href="/">Home</a>
         <a href="/featured" style="color: #ff6f61; font-weight: bold;">Featured</a>
@@ -326,7 +377,6 @@ footer {
         <a href="/about">About Us</a>
         <a href="/faq">FAQ</a>
     </div>
-
     <div class="right-section">
         <div class="auth-links">
             <a href="/login">Login</a>
@@ -342,17 +392,11 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
-<!-- Display featured recipe -->
 <main>
-    <!-- Display main title -->
     <h1 id="featuredTitle">Fetching your kitchen adventure...</h1>
-
-    <!-- Display CSS -->
     <div class="featured-container" id="featuredRecipe">
         <p>Loading featured recipe...</p>
     </div>
-
-    <!-- Refresh Button -->
     <button class="refresh-btn" onclick="loadFeaturedRecipe()">Show Another Recipe</button>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
@@ -363,38 +407,48 @@ footer {
 </footer>
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
 
+<!-- ________________________________ Login Popup (UNIQUE) ________________________________ -->
+<div id="loginPopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="document.getElementById('loginPopup').style.display='none'">&times;</span>
+        <h2>Login Required</h2>
+        <p>You need to log in to favorite recipes.</p>
+        <button onclick="window.location.href='/login'">Login</button>
+        <button onclick="window.location.href='/signup'">Sign Up</button>
+    </div>
+</div>
+<!-- ________________________________ Login Popup (UNIQUE) ________________________________ -->
+
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
-<!-- Fetch and display a random featured recipe -->
 <script>
+// Check login status from backend and store it on <body> tag
+async function checkLoginStatus() {
+    try {
+        const res = await fetch('/current_user');
+        const data = await res.json();
+        // If the user is logged in, set loggedIn to true, otherwise false
+        document.body.dataset.loggedIn = data.logged_in ? "true" : "false";
+    } catch (err) {
+        console.error("Error checking login status:", err);
+        document.body.dataset.loggedIn = "false";
+    }
+}
+
+// Fetch and display a random featured recipe
 function loadFeaturedRecipe() {
-    fetch('/random_recipe') // Fetch a random recipe 
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
+    fetch('/random_recipe')
+        .then(r => r.json())
+        .then(async data => {
             const container = document.getElementById('featuredRecipe');
             const title = document.getElementById('featuredTitle');
 
             if (data.recipe) {
                 const recipe = data.recipe;
-
-                // Display main title
                 title.innerHTML = "Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!";
-
-                // Number each instruction 
-                const instructionsWithNumbers = recipe.instructions
-                    .split('\n')
-                    .map((instruction, index) => {
-                        const cleanedInstruction = instruction.replace(/^\d+\.\s*/, ''); // remove existing numbers
-                        return `${index + 1}. ${cleanedInstruction}`;
-                    })
-                    .join('<br>');
-
-                // Build the recipe content 
-                container.innerHTML = `
-                    <h2>${recipe.name}</h2>
-                    ${recipe.image ? `<div class="recipe-image" style="background-image: url('${recipe.image}');"></div>` : `<div class="recipe-image">No Image Available</div>`}
+                const instructionsWithNumbers = recipe.instructions.split('\n').map((step, i) => `${i + 1}. ${step.replace(/^\d+\.\s*/, '')}`).join('<br>');
+                container.innerHTML = ` 
+                    <h2>${recipe.name} <span class="favorite-star" id="favStar" title="Add to favorites">★</span></h2>
+                    ${recipe.image ? `<div class="recipe-image" style="background-image:url('${recipe.image}')"></div>` : `<div class="recipe-image">No Image Available</div>`}
                     <div class="recipe-meta">
                         <span class="bold-label">Prep Time:</span> ${recipe.prep_time || 'N/A'} | 
                         <span class="bold-label">Cook Time:</span> ${recipe.cook_time || 'N/A'} | 
@@ -402,30 +456,71 @@ function loadFeaturedRecipe() {
                         <span class="bold-label">Servings:</span> ${recipe.servings || 'N/A'}
                     </div>
                     <div class="recipe-ingredients">
-                        <hr>
-                        <strong>Ingredients:</strong>
+                        <hr><strong>Ingredients:</strong>
                         <ul>${recipe.ingredients.split('\n').map(ing => `<li>${ing}</li>`).join('')}</ul>
                     </div>
                     <p><strong>Instructions:</strong><br>${instructionsWithNumbers}</p>
                 `;
+
+                const star = document.getElementById('favStar');
+                star.addEventListener('click', () => toggleFavorite(recipe.recipe_id));
+
+                // If logged in, check if this recipe is already a favorite
+                if (document.body.dataset.loggedIn === "true") {
+                    try {
+                        const favRes = await fetch(`/is_favorite/${recipe.recipe_id}`);
+                        const favData = await favRes.json();
+                        if (favData.is_favorite) {
+                            star.classList.add('favorited');
+                        }
+                    } catch (err) {
+                        console.error('Error checking favorite status:', err);
+                    }
+                }
             } else {
-                // Display error if no recipe found
                 title.textContent = "Oops!";
-                container.innerHTML = `<p style="color: red;">${data.error || "No recipe found."}</p>`;
+                container.innerHTML = `<p style="color:red;">${data.error || 'No recipe found.'}</p>`;
             }
         })
-        .catch(error => {
-            // Display an error message if fails
-            console.error('Error fetching featured recipe:', error);
-            document.getElementById('featuredTitle').textContent = "Oops!";
-            document.getElementById('featuredRecipe').innerHTML = `
-                <p style="color: red;">Unable to load featured recipe. Please try again later.</p>
-            `;
+        .catch(err => {
+            console.error(err);
+            document.getElementById('featuredRecipe').innerHTML = `<p style="color:red;">Error loading recipe.</p>`;
         });
 }
 
-// Automatically load recipe 
-loadFeaturedRecipe();
+// Toggle favorite
+function toggleFavorite(recipeId) {
+    const isLoggedIn = document.body.dataset.loggedIn === "true";
+    const star = document.getElementById('favStar');
+
+    if (!isLoggedIn) {
+        // Show the login popup only if the user is not logged in
+        document.getElementById('loginPopup').style.display = 'flex';
+        return;
+    }
+
+    // Toggle UI state immediately
+    star.classList.toggle('favorited');
+
+    const isFavorited = star.classList.contains('favorited');
+    const url = isFavorited ? '/add_favorite' : '/remove_favorite';
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipe_id: recipeId })
+    })
+    .catch(err => {
+        console.error('Favorite toggle failed:', err);
+        // Revert UI if request fails
+        star.classList.toggle('favorited');
+    });
+}
+
+// Auto-load recipe 
+checkLoginStatus().then(() => {
+    loadFeaturedRecipe();
+});
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
