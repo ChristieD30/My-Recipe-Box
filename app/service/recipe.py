@@ -44,7 +44,7 @@ class RecipeService:
         }
     
     @staticmethod
-    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None):
+    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, _category=None, user_id=None):
         try:
             # Fetch the original recipe
             original = Recipe.query.filter_by(id=_id).first()
@@ -52,9 +52,10 @@ class RecipeService:
                 return None, "Unable to duplicate recipe."
 
             # Use original data from orginal recipe
-            name = _name or original.name + " (Copy)"
+            name = (_name or original.name) + " (Copy)"
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
+            category = _category or original.category
 
             # Check if the duplicated recipe name already exists for this user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -66,6 +67,7 @@ class RecipeService:
                 name=name,
                 ingredients=ingredients,
                 instructions=instructions,
+                category= category,
                 user_id=user_id
             )
 
@@ -80,6 +82,41 @@ class RecipeService:
             print(f"Error duplicating recipe: {str(e)}")
             raise
 
+    @staticmethod
+    def owner_update_recipe(recipe_id, name=None, ingredients=None, instructions=None, category=None, user_id=None):
+        try:
+            # Ensure the recipe exists and is owned by the provided user_id
+            recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first()
+            if not recipe:
+                return None, "Recipe not found or you do not have permission to update it."
+            # Update fields when provided
+            if name:
+                # Check for name uniqueness for this user
+                existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
+                if existing and existing.id != recipe_id:
+                    return None, "Recipe name already exists. Please choose a different name."
+                recipe.name = name
+
+            if ingredients:
+                recipe.ingredients = ingredients
+
+            if instructions:
+                recipe.instructions = instructions
+
+            if category:
+                if category not in [cat.value for cat in Category]:
+                    return None, f"Invalid category. Valid categories are: {[cat.value for cat in Category]}"
+                recipe.category = category
+
+            recipe.updated_at = datetime.utcnow()
+            db.session.commit()
+            message = f"Your recipe '{recipe.name}' has been updated."
+            return recipe, message
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating recipe: {str(e)}")
+            raise
     @staticmethod
     def search_recipes(query=None, category=None):
         """

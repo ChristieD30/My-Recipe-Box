@@ -5,8 +5,8 @@
         function confirmAndRefresh(event) {
             event.preventDefault(); // Stop normal form submission for now
 
-            // Ask user for confirmation
-            const confirmed = confirm("Are you sure you want to update this recipe?");
+            // Ask user for confirmation with context about what will happen
+            const confirmed = confirm("Are you sure you want to save these changes? If this isn't your recipe, a copy will be created in your collection.");
 
             if (confirmed) {
                 // Submit form if confirmed
@@ -20,6 +20,14 @@
 </head>
 <body>
 <h1>Recipes</h1>
+
+    <!-- Success/Error Messages -->
+    {% if message %}
+        <div class="message message-{{ message_type }}">
+            {{ message }}
+        </div>
+    {% endif %}
+
     <form method="POST" onsubmit="confirmAndRefresh(event)">
         <label for="name">Name:</label><br>
         <input type="text" id="name" name="name" value="{{ recipe['name'] }}"><br><br>
