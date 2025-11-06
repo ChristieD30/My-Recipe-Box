@@ -429,6 +429,33 @@ def create_app():
             }), 200
         else:
             return jsonify({'error': 'Recipe not found'}), 404
+        
+    @app.route('/favorites_list', methods=['GET'])
+    def favorites_list():
+        # Require login
+        if 'logged_in' not in session or not session['logged_in']:
+            return jsonify({'error': 'Login required'}), 401
+
+        user_id = session['user_id']
+
+        from app.service.favorites import FavoriteService
+        from app.model.recipes import Recipe
+
+        # Get all favorites for this user
+        favorites = FavoriteService.get_user_favorites(user_id)
+        recipe_list = []
+
+        for fav in favorites:
+            recipe = Recipe.query.get(fav.recipe_id)
+            if recipe:
+                recipe_list.append({
+                    'recipe_id': recipe.id,
+                    'name': recipe.name,
+                    # Safe optional field — works even if image column doesn’t exist
+                    'image': getattr(recipe, 'image', None)
+                })
+
+        return jsonify({'recipes': recipe_list}), 200
 
     return app
 
