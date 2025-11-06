@@ -191,29 +191,36 @@ h1 {
     padding: 0 10px;
 }
 
-/* Recipe name on top (no shadow underneath title box) */
+/* Recipe name on top (responsive, centered, wraps without overlapping star) */
 .recipe-card .recipe-name {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     display: flex;
-    align-items: center;        /* vertically center star & text */
-    justify-content: center;    /* center text horizontally */
+    align-items: center;          /* vertical centering */
+    justify-content: center;      /* horizontal centering of text */
+    flex-wrap: wrap;              /* allow multi-line wrapping */
     font-weight: 700;
     font-size: 1.3em;
     color: #000;
     background: rgba(255,255,255,0.9);
-    padding: 10px 0;
+    padding: 10px 52px 10px 16px; /* slightly less right padding to balance */
+    text-align: center;
+    box-sizing: border-box;
+    line-height: 1.3;
+    min-height: 48px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 /* ________________________________ Favorite Star (MATCH FEATURED STYLE, inside title right corner) ________________________________ */
 .favorite-star {
     position: absolute;
-    right: 12px;                 /* move to far right corner */
-    top: 50%;                    /* center vertically within title bar */
+    right: 16px;                  /* move a bit left for balance */
+    top: 50%;                     /* keep vertically centered */
     transform: translateY(-50%);
-    font-size: 1.6em;            /* balanced size */
+    font-size: 1.6em;
     color: gold;
     cursor: pointer;
     transition: color 0.3s, transform 0.2s;
@@ -235,9 +242,9 @@ h1 {
     position: absolute;
     top: 0;
     right: 0;
-    width: 60px;  /* size of corner zone around star */
+    width: 60px;  /* match new padding-right */
     height: 100%;
-    z-index: 4;   /* below star, above background */
+    z-index: 4;
     cursor: default;
 }
 /* ________________________________ No-click zone for right corner (prevents accidental opens) ________________________________ */
@@ -338,6 +345,14 @@ footer {
     }
     .search-form input[type="text"] {
         width: 150px; 
+    }
+}
+
+/* Responsive title adjustment for smaller screens */
+@media (max-width: 600px) {
+    .recipe-card .recipe-name {
+        font-size: 1.1em;
+        padding: 8px 50px 8px 10px; /* slightly smaller padding */
     }
 }
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
