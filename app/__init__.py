@@ -293,7 +293,8 @@ def create_app():
                     _ingredients=request.form["ingredients"],
                     _instructions=request.form["instructions"],
                     _category=request.form["category"],
-                    user_id=session.get('user_id')  # Use logged-in user's ID
+                    user_id=session.get('user_id'),
+                    user_name=session.get('name')  # Use logged-in user's ID
                 )
                 
                 if fork_result[0]:  # Success
@@ -311,8 +312,7 @@ def create_app():
                     ingredients=request.form["ingredients"],
                     instructions=request.form["instructions"],
                     category=request.form["category"],
-                    user_id=recipe.user_id,
-                    logged_in_user_id=session.get('user_id')
+                    user_id=recipe.user_id
                 )
                 
                 if owner_update_result[0]:  # Success

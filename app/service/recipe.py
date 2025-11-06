@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 from app.model.recipes import Recipe
 from app.enums import Category
 from app import db
-from app.model.recipes import Recipe
 
 class RecipeService:
     @staticmethod
@@ -44,7 +43,7 @@ class RecipeService:
         }
     
     @staticmethod
-    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, _category=None, user_id=None):
+    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, _category=None, user_id=None, user_name=None):
         try:
             # Fetch the original recipe
             original = Recipe.query.filter_by(id=_id).first()
@@ -52,7 +51,7 @@ class RecipeService:
                 return None, "Unable to duplicate recipe."
 
             # Use original data from orginal recipe
-            name = (_name or original.name) + " (Copy)"
+            name = (_name or original.name) + " (" + user_name + " Copy)"
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
             category = _category or original.category
