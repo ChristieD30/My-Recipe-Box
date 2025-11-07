@@ -37,6 +37,14 @@
         <input type="hidden" name="page" value="{{ paginated_recipes.page }}">
     </form>
 
+        {% if recipe.image_location %}
+        <div class="recipe-image">
+            <img src="{{ url_for('static', filename=recipe.image_location) }}" 
+                alt="{{ recipe.name }}" 
+                style="max-width: 300px; height: auto; border-radius: 4px;">
+        </div>
+    {% endif %}
+
     <!-- Pagination -->
     <div>
         {% if paginated_recipes.has_prev %}

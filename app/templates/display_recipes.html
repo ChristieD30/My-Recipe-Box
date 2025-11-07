@@ -41,6 +41,13 @@
         <input type="text" id="updated" name="updated" readonly value="{{ recipe['updated_at'].strftime('%m/%d/%Y %I:%M:%S %p') }}"><br><br>
         <input type="submit" value="Update">
     </form>
+    {% if recipe.image_location %}
+        <div class="recipe-image">
+            <img src="{{ url_for('static', filename=recipe.image_location) }}" 
+                alt="{{ recipe.name }}" 
+                style="max-width: 300px; height: auto; border-radius: 4px;">
+        </div>
+    {% endif %}
     <!-- Navigation -->
     <div>
         {% if paginated_recipes.has_prev %}

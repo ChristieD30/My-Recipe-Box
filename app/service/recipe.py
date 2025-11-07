@@ -8,7 +8,7 @@ from app import db
 
 class RecipeService:
     @staticmethod
-    def add_recipe(name, ingredients, instructions, category, user_id=None):
+    def add_recipe(name, ingredients, instructions, category, image_location=None, user_id=None):
         try:
             # Check if recipe with the same name exists for this user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -23,6 +23,7 @@ class RecipeService:
                 ingredients=ingredients,
                 instructions=instructions,
                 category=category,
+                image_location=image_location,
                 user_id=user_id # can't leave this null
             )
             db.session.add(new_recipe)
@@ -43,7 +44,7 @@ class RecipeService:
         }
     
     @staticmethod
-    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, _category=None, user_id=None, user_name=None):
+    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, _category=None, user_id=None, user_full_name=None, _image_location=None):
         try:
             # Fetch the original recipe
             original = Recipe.query.filter_by(id=_id).first()
@@ -51,10 +52,11 @@ class RecipeService:
                 return None, "Unable to duplicate recipe."
 
             # Use original data from orginal recipe
-            name = (_name or original.name) + " (" + user_name + " Copy)"
+            name = f"{_name or original.name} ({user_full_name} Copy)"
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
             category = _category or original.category
+            image_location = _image_location or original.image_location
 
             # Check if the duplicated recipe name already exists for this user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -82,7 +84,7 @@ class RecipeService:
             raise
 
     @staticmethod
-    def owner_update_recipe(recipe_id, name=None, ingredients=None, instructions=None, category=None, user_id=None):
+    def owner_update_recipe(recipe_id, name=None, ingredients=None, instructions=None, category=None, user_id=None, image_location=None):
         try:
             # Ensure the recipe exists and is owned by the provided user_id
             recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first()
@@ -101,6 +103,9 @@ class RecipeService:
 
             if instructions:
                 recipe.instructions = instructions
+            
+            if image_location:
+                recipe.image_location = image_location
 
             if category:
                 if category not in [cat.value for cat in Category]:

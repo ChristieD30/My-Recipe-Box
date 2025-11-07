@@ -13,16 +13,18 @@ class Recipe(db.Model):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Made nullable
+    image_location = Column(String(255), nullable=True) 
     
     user = relationship('User', back_populates='recipes')
     favorites = relationship('Favorite', back_populates='recipe', cascade='all, delete-orphan')
 
-    def __init__(self, *, name, ingredients, instructions, category, user_id=None):
+    def __init__(self, *, name, ingredients, instructions, category, user_id=None, image_location=None):
         self.name = name
         self.ingredients = ingredients
         self.instructions = instructions
         self.category = category
         self.user_id = user_id
+        self.image_location = image_location
 
     def __repr__(self):
         return f'<Recipe {self.name!r}>'

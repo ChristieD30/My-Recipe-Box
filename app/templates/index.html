@@ -274,7 +274,7 @@ footer {
     </div>
     <div id="recipeForm">
         <h2>Add a New Recipe</h2>
-        <form method="POST" action="/add_recipe">
+        <form method="POST" action="/add_recipe" enctype="multipart/form-data">
             <div>
                 <label for="name">Recipe Name:</label>
                 <input type="text" id="name" name="name" required>
@@ -298,6 +298,11 @@ footer {
                 <label for="instructions">Instructions:</label>
                 <textarea id="instructions" name="instructions" required></textarea>
             </div>
+            <div>
+            <label for="recipe_image">Recipe Image (optional):</label>
+            <input type="file" id="recipe_image" name="recipe_image" accept="image/*">
+            <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF (max 5MB)</small>
+             </div>
             <input type="submit" value="Add Recipe">
         </form>
     </div>

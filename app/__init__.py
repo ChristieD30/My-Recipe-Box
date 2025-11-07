@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import Flask, app, redirect, request, jsonify, render_template, session, url_for
+from werkzeug.utils import secure_filename
 
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -8,6 +9,31 @@ from pathlib import Path
 
 # Initialize extensions
 db = SQLAlchemy()
+
+# File upload configuration
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_recipe_image(file, app):
+    """Save uploaded image and return the file path"""
+    if file and allowed_file(file.filename):
+        # Create uploads directory if it doesn't exist
+        upload_folder = os.path.join(app.root_path, 'static', 'uploads', 'recipes')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # Generate unique filename
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{timestamp}_{secure_filename(file.filename)}"
+        
+        # Save file
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+        
+        return f"uploads/recipes/{filename}"
+    return None
 
 def create_app():
     app = Flask(__name__)
@@ -68,8 +94,19 @@ def create_app():
             
         if request.content_type == 'application/json':
             data = request.get_json()
+            image_location = None  # JSON requests don't include files
         else:
             data = request.form
+            # Handle file upload
+            image_location = None
+            if 'recipe_image' in request.files:
+                file = request.files['recipe_image']
+                if file and file.filename:  # Check if file was actually uploaded
+                    try:
+                        image_location = save_recipe_image(file, app)
+                    except Exception as e:
+                        return jsonify({'error': f'Error uploading image: {str(e)}'}), 400
+        
         name = data.get('name')
         ingredients = data.get('ingredients')
         category = data.get('category', 'Uncategorized')  # Default category if not provided
@@ -84,6 +121,7 @@ def create_app():
                 name=name,
                 ingredients=ingredients,
                 instructions=instructions,
+                image_location=image_location,
                 category=category,
                 user_id=user_id
             )

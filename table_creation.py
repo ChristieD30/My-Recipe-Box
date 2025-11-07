@@ -12,9 +12,9 @@ def create_tables():
     cursor.execute("PRAGMA foreign_keys = ON;")
 
     # Drop existing tables (be careful with this in production!)
-    # cursor.execute("DROP TABLE IF EXISTS favorites;")
-    # cursor.execute("DROP TABLE IF EXISTS recipes;")
-    # cursor.execute("DROP TABLE IF EXISTS users;")
+    cursor.execute("DROP TABLE IF EXISTS favorites;")
+    cursor.execute("DROP TABLE IF EXISTS recipes;")
+    cursor.execute("DROP TABLE IF EXISTS users;")
 
     users_table_creation_query = """
     CREATE TABLE IF NOT EXISTS users (
@@ -38,6 +38,7 @@ def create_tables():
         user_id INTEGER NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        image_location VARCHAR(255),
         FOREIGN KEY (user_id) REFERENCES users (id)
     );
     """
