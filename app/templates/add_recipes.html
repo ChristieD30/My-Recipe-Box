@@ -344,6 +344,27 @@ footer {
                 <label for="ingredients">Ingredients:</label>
                 <textarea id="ingredients" name="ingredients" required></textarea>
             </div>
+
+            <!-- Added Timing and Servings Section -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
+                <div>
+                    <label for="prep_time">Prep Time:</label>
+                    <input type="number" id="prep_time" name="prep_time" min="0" placeholder="e.g. 15 mins" required>
+                </div>
+                <div>
+                    <label for="cook_time">Cook Time:</label>
+                    <input type="number" id="cook_time" name="cook_time" min="0" placeholder="e.g. 30 mins" required>
+                </div>
+                <div>
+                    <label for="total_time">Total Time:</label>
+                    <input type="number" id="total_time" name="total_time" min="0" placeholder="e.g. 45 mins" required>
+                </div>
+                <div>
+                    <label for="servings">Servings:</label>
+                    <input type="number" id="servings" name="servings" min="1" placeholder="e.g. 4 mins" required>
+                </div>
+            </div>
+
             <div>
                 <label for="category">Category:</label>
                 <select id="category" name="category">
@@ -405,6 +426,7 @@ function logout() {
             console.error('Error logging out:', error);
         });
 }
+
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
