@@ -359,6 +359,15 @@ footer {
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
     <h1>Browse All Recipes</h1>
+
+    <!-- Category Filter Section -->
+    <section id="categoryFilter" style="text-align:center; margin-bottom: 25px;">
+        <h2 style="margin-bottom: 10px;">Browse Recipes By Category</h2>
+        <div id="categoryButtons" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
+            <!-- Buttons dynamically added by JS -->
+        </div>
+    </section>
+
     <div id="recipesGrid" class="recipes-grid"></div>
     <div id="recipeDetail"></div>
 </main>
@@ -372,16 +381,63 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
-async function loadAllRecipes() {
+/* ________________________________ Category Filter Logic (NEW) ________________________________ */
+const categories = [
+    "All",
+    "Breakfast",
+    "Lunch",
+    "Dinner",
+    "Dessert",
+    "Salads",
+    "Soup",
+    "Snacks",
+    "Uncategorized"
+];
+
+// Create clickable category buttons
+function createCategoryButtons() {
+    const container = document.getElementById('categoryButtons');
+    container.innerHTML = '';
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.textContent = cat;
+        btn.style.padding = '8px 14px';
+        btn.style.border = '1px solid #ccc';
+        btn.style.borderRadius = '5px';
+        btn.style.backgroundColor = '#fff';
+        btn.style.cursor = 'pointer';
+        btn.style.transition = 'all 0.2s ease';
+        btn.addEventListener('mouseenter', () => btn.style.backgroundColor = '#ff6f61');
+        btn.addEventListener('mouseleave', () => {
+            if (!btn.classList.contains('active-category')) btn.style.backgroundColor = '#fff';
+        });
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#categoryButtons button').forEach(b => {
+                b.classList.remove('active-category');
+                b.style.backgroundColor = '#fff';
+                b.style.color = '#000';
+            });
+            btn.classList.add('active-category');
+            btn.style.backgroundColor = '#ff6f61';
+            btn.style.color = '#fff';
+            loadAllRecipes(cat);
+        });
+        container.appendChild(btn);
+    });
+}
+
+/* ________________________________ Modified loadAllRecipes to support category ________________________________ */
+async function loadAllRecipes(category = "All") {
     try {
-        const res = await fetch('/browse_recipes_list');
+        const query = category && category !== "All" ? `?category=${encodeURIComponent(category)}` : "";
+        const res = await fetch(`/browse_recipes_list${query}`);
         const data = await res.json();
 
         const grid = document.getElementById('recipesGrid');
         grid.innerHTML = '';
 
         if (!data.recipes || data.recipes.length === 0) {
-            grid.innerHTML = '<p style="text-align:center;">No recipes available.</p>';
+            grid.innerHTML = `<p style="text-align:center;">No recipes found for ${category}.</p>`;
             return;
         }
 
@@ -417,6 +473,7 @@ async function loadAllRecipes() {
     }
 }
 
+/* ________________________________ Original showRecipeDetail Logic (UNCHANGED) ________________________________ */
 async function showRecipeDetail(id) {
     try {
         const res = await fetch(`/recipe/${id}`);
@@ -446,6 +503,8 @@ async function showRecipeDetail(id) {
     }
 }
 
+/* Initialize category buttons and load recipes */
+createCategoryButtons();
 loadAllRecipes();
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
