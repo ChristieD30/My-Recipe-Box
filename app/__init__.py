@@ -456,6 +456,24 @@ def create_app():
                 })
 
         return jsonify({'recipes': recipe_list}), 200
+    
+    @app.route('/browse_recipes_list', methods=['GET'])
+    def browse_recipes_list():
+        from app.model.recipes import Recipe
+        recipes = Recipe.query.all()
+        return jsonify({'recipes': [
+            {
+                'recipe_id': r.id,
+                'name': r.name,
+                'image': getattr(r, 'image', None),
+                'prep_time': getattr(r, 'prep_time', None),
+                'cook_time': getattr(r, 'cook_time', None),
+                'total_time': getattr(r, 'total_time', None),
+                'servings': getattr(r, 'servings', None),
+                'ingredients': r.ingredients,
+                'instructions': r.instructions
+            } for r in recipes
+        ]})
 
     return app
 
