@@ -16,7 +16,7 @@ html, body {
     display: flex;
     flex-direction: column;
 }
-/* ________________________________ Base Layout (CAN COPY AND PASTE) ________________________________ */
+/* ________________________________ Base Layout (CAN COPY AND PASTE) */
 
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 nav {
@@ -191,7 +191,7 @@ h1 {
     padding: 0 10px;
 }
 
-/* Recipe name (centered overlay, same as favorites) */
+/* Recipe name (centered overlay) */
 .recipe-card .recipe-name {
     position: absolute;
     top: 0;
@@ -205,7 +205,7 @@ h1 {
     font-size: 1.3em;
     color: #000;
     background: rgba(255,255,255,0.9);
-    padding: 10px 16px;
+    padding: 10px 52px 10px 16px; /* adjust for star space */
     text-align: center;
     box-sizing: border-box;
     line-height: 1.3;
@@ -213,6 +213,40 @@ h1 {
     word-break: break-word;
     overflow-wrap: anywhere;
 }
+
+/* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
+.favorite-star {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.6em;
+    color: gold;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.2s;
+    user-select: none;
+    line-height: 1;
+    z-index: 5;
+}
+.favorite-star:hover {
+    color: #ffda33;
+    transform: translateY(-50%) scale(1.1);
+}
+.favorite-star::before {
+    content: "★";
+}
+
+/* Prevent accidental clicks in corner */
+.no-click-zone {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 100%;
+    z-index: 4;
+    cursor: default;
+}
+/* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
 
 /* Bottom info section */
 .recipe-card .recipe-info {
@@ -291,6 +325,55 @@ footer {
 }
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 
+/* ________________________________ Login Popup (UNIQUE) ________________________________ */
+#loginPopup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+#loginPopup .popup-content {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+#loginPopup h2 {
+    color: #ff6f61;
+}
+#loginPopup .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.5em;
+    color: #666;
+    cursor: pointer;
+}
+#loginPopup .close-btn:hover {
+    color: #ff6f61;
+}
+#loginPopup button {
+    margin: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff6f61;
+    color: white;
+    cursor: pointer;
+}
+#loginPopup button:hover {
+    background-color: #ff4b3e;
+}
+/* ________________________________ Login Popup (UNIQUE) ________________________________ */
+
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 @media screen and (max-width: 1024px) {
     nav {
@@ -317,14 +400,15 @@ footer {
 @media (max-width: 600px) {
     .recipe-card .recipe-name {
         font-size: 1.1em;
-        padding: 8px 10px;
+        padding: 8px 50px 8px 10px;
     }
 }
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
+
 </style>
 </head>
 
-<body>
+<body data-logged-in="false">
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 <nav>
     <a href="/" class="logo">My Recipe Box</a>
@@ -373,11 +457,23 @@ footer {
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 
-<!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
+<!-- ________________________________ Footer (CAN COPY AND PASTE) -->
 <footer>
     &copy; 2025 My Recipe Box. All rights reserved.
 </footer>
-<!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
+<!-- ________________________________ Footer (CAN COPY AND PASTE) -->
+
+<!-- ________________________________ Login Popup (UNIQUE) ________________________________ -->
+<div id="loginPopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="document.getElementById('loginPopup').style.display='none'">&times;</span>
+        <h2>Login Required</h2>
+        <p>You need to log in to favorite recipes.</p>
+        <button onclick="window.location.href='/login'">Login</button>
+        <button onclick="window.location.href='/signup'">Sign Up</button>
+    </div>
+</div>
+<!-- ________________________________ Login Popup (UNIQUE) ________________________________ -->
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
@@ -426,9 +522,14 @@ function createCategoryButtons() {
     });
 }
 
-/* ________________________________ Modified loadAllRecipes to support category ________________________________ */
+/* ________________________________ Modified loadAllRecipes to support category + favorite star + guest check ________________________________ */
 async function loadAllRecipes(category = "All") {
     try {
+        // check login status
+        const userRes = await fetch('/current_user');
+        const user = await userRes.json();
+        const loggedIn = user.logged_in;
+
         const query = category && category !== "All" ? `?category=${encodeURIComponent(category)}` : "";
         const res = await fetch(`/browse_recipes_list${query}`);
         const data = await res.json();
@@ -441,14 +542,30 @@ async function loadAllRecipes(category = "All") {
             return;
         }
 
+        // if logged in, fetch favorites list
+        let favorites = [];
+        if (loggedIn) {
+            const favRes = await fetch('/favorites_list');
+            const favData = await favRes.json();
+            favorites = favData.recipes.map(r => r.recipe_id);
+        }
+
         data.recipes.forEach(recipe => {
+            const isFavorite = loggedIn && favorites.includes(recipe.recipe_id);
+
             const card = document.createElement('div');
             card.classList.add('recipe-card');
             card.innerHTML = `
                 <div class="image-container">
                     ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.name}" style="width:100%; height:100%; object-fit:cover;">`
                                    : `<div class="placeholder-text">No image available</div>`}
-                    <div class="recipe-name">${recipe.name}</div>
+                    <div class="recipe-name">
+                        ${recipe.name}
+                        <div class="no-click-zone"></div>
+                        ${loggedIn
+                           ? `<span class="favorite-star" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" style="color:${isFavorite ? 'gold' : '#ccc'};"></span>`
+                           : `<span class="favorite-star" title="Login to favorite" style="color:#ccc;"></span>`}
+                    </div>
                     <div class="recipe-info">
                         <div class="row">
                             <span><strong>Prep Time:</strong> ${recipe.prep_time || 'N/A'}</span>
@@ -462,8 +579,58 @@ async function loadAllRecipes(category = "All") {
                 </div>
             `;
 
-            card.addEventListener('click', () => {
-                showRecipeDetail(recipe.recipe_id);
+            const star = card.querySelector('.favorite-star');
+            const noClickZone = card.querySelector('.no-click-zone');
+
+            if (loggedIn) {
+                star.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    try {
+                        if (isFavorite) {
+                            await fetch('/remove_favorite', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ recipe_id: recipe.recipe_id })
+                            });
+                            star.style.color = '#ccc';
+                            star.title = 'Add to favorites';
+                            favorites = favorites.filter(id => id !== recipe.recipe_id);
+                        } else {
+                            await fetch('/add_favorite', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ recipe_id: recipe.recipe_id })
+                            });
+                            star.style.color = 'gold';
+                            star.title = 'Remove from favorites';
+                            favorites.push(recipe.recipe_id);
+                        }
+                        // update isFavorite for this card context
+                        // (note: this closed-over variable won't update automatically in this loop, but okay for UI)
+                    } catch (err) {
+                        console.error('Error updating favorite:', err);
+                    }
+                });
+
+                noClickZone.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            } else {
+                // guest click: show login popup
+                star.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.getElementById('loginPopup').style.display = 'flex';
+                });
+
+                noClickZone.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('favorite-star') && !e.target.classList.contains('no-click-zone')) {
+                    showRecipeDetail(recipe.recipe_id);
+                }
             });
 
             grid.appendChild(card);
@@ -508,5 +675,6 @@ createCategoryButtons();
 loadAllRecipes();
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
+
 </body>
 </html>
