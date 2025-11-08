@@ -152,6 +152,7 @@ def create_app():
         from app.service.recipe import RecipeService
         from app.service.favorites import FavoriteService
         from app.model.favorites import Favorite
+        from app.model.recipes import Recipe
         q = request.args.get('q', '')
         page = request.args.get('page', 1, type=int)
         per_page = 1
@@ -168,31 +169,37 @@ def create_app():
                 )
             )
 
-        user_id = session.get('user_id')  # get user id from session
+        user_id = session.get('user_id')
+        print("DEBUG: session user_id =", user_id)
 
-        # --- Handle POST actions (update recipe or toggle favorite) ---
-        if request.method == "POST":
+        paginated_recipes = recipes_query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
+        recipe = paginated_recipes.items[0] if paginated_recipes.items else None
+
+        # --- Handle POST actions ---
+        if request.method == "POST" and recipe:
             recipe_id = request.form.get("recipe_id")
-            recipe = Recipe.query.get(recipe_id)
 
-            if "favorite" in request.form:
+            if "favorite" in request.form and user_id:
                 # Toggle favorite
                 existing_fav = Favorite.query.filter_by(recipe_id=recipe_id, user_id=user_id).first()
                 if existing_fav:
                     FavoriteService.remove_favorite(recipe_id, user_id)
                 else:
                     FavoriteService.add_favorite(recipe_id, user_id)
-                # Recalculate favorite status
+
                 is_favorite = FavoriteService.is_favorite(recipe_id, user_id)
 
-                # Render template immediately with updated favorite
                 return render_template(
                     'search_results.html',
                     recipe=recipe,
                     paginated_recipes=paginated_recipes,
                     search_term=q,
-                    is_favorite=is_favorite
+                    is_favorite=is_favorite,
+                    user_id=user_id
                 )
+
+            elif "favorite" in request.form and not user_id:
+                return redirect(url_for("login"))
 
             else:
                 # Update recipe
@@ -205,10 +212,6 @@ def create_app():
 
             return redirect(url_for("search_recipes", q=q, page=page))
 
-        # --- Pagination ---
-        paginated_recipes = recipes_query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
-        recipe = paginated_recipes.items[0] if paginated_recipes.items else None
-
         # --- Determine if recipe is already a favorite ---
         is_favorite = False
         if recipe and user_id:
@@ -219,7 +222,8 @@ def create_app():
             recipe=recipe,
             paginated_recipes=paginated_recipes,
             search_term=q,
-            is_favorite=is_favorite
+            is_favorite=is_favorite,
+            user_id=user_id
         )
 
     @app.route('/login', methods=['POST'])

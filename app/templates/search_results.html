@@ -44,6 +44,7 @@
     </form>
 
     <!-- Favorite Toggle Form -->
+     {% if user_id %}
     <form method="POST">
         <input type="hidden" name="recipe_id" value="{{ recipe['id'] }}">
         <input type="hidden" name="favorite" value="true">
@@ -56,6 +57,9 @@
             Favorite
         </label>
     </form>
+    {% else %}
+        <p>Please <a href="/login" style="color: #ff6f61; text-decoration: none; font-weight: 500;">login</a> to view favorites.</p>
+    {% endif %}
 
     <!-- Pagination -->
     <div>
