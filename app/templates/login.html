@@ -230,6 +230,58 @@ footer {
 }
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 
+/* ________________________________ Forgot Popup (SAME STYLE AS FEATURED) ________________________________ */
+#forgotPopup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+#forgotPopup .popup-content {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    font-size: 1.05em;
+    line-height: 1.6;
+}
+#forgotPopup h2 {
+    color: #ff6f61;
+    margin-bottom: 15px;
+}
+#forgotPopup .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.5em;
+    color: #666;
+    cursor: pointer;
+}
+#forgotPopup .close-btn:hover {
+    color: #ff6f61;
+}
+#forgotPopup button {
+    margin-top: 15px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff6f61;
+    color: white;
+    cursor: pointer;
+}
+#forgotPopup button:hover {
+    background-color: #ff4b3e;
+}
+/* ________________________________ Forgot Popup (SAME STYLE AS FEATURED) ________________________________ */
+
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 @media screen and (max-width: 1024px) {
     nav {
@@ -321,7 +373,7 @@ footer {
     <!-- Links -->
     <div class="links">
         <p>Don't have an account? <a href="/signup">Sign Up</a></p>
-        <p><a href="#" id="forgotLink">Forgot Username/Password?</a></p>
+        <p><a href="#" id="forgotLink">Forgot Username/Password</a></p>
     </div>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
@@ -331,6 +383,18 @@ footer {
     &copy; 2025 My Recipe Box. All rights reserved.
 </footer>
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
+
+<!-- ________________________________ Forgot Popup (UNIQUE) ________________________________ -->
+<div id="forgotPopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="document.getElementById('forgotPopup').style.display='none'">&times;</span>
+        <h2>Forgot Username or Password?</h2>
+        <p>Password or username reset is not available through this interface.<br>
+        Please email <strong>myrecipeboxsupport@example.com</strong> to request assistance.</p>
+        <button onclick="document.getElementById('forgotPopup').style.display='none'">Close</button>
+    </div>
+</div>
+<!-- ________________________________ Forgot Popup (UNIQUE) ________________________________ -->
 
 <!-- ________________________________ JavaScript for Login (UNIQUE) ________________________________ -->
 <script>
@@ -358,6 +422,12 @@ function(e) {
         console.error(err);
         alert("⚠️ An unexpected error occurred during login.");
     });
+});
+
+/* Forgot popup trigger */
+document.getElementById('forgotLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('forgotPopup').style.display = 'flex';
 });
 </script>
 <!-- ________________________________ JavaScript for Login (UNIQUE) ________________________________ -->
