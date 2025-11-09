@@ -64,11 +64,13 @@ def create_app():
         auth_check = require_login()
         if auth_check:
             return auth_check
-            
+
+        # Parse data based on content type
         if request.content_type == 'application/json':
             data = request.get_json()
         else:
             data = request.form
+        
         name = data.get('name')
         ingredients = data.get('ingredients')
         category = data.get('category', 'Uncategorized')  # Default category if not provided
@@ -79,6 +81,7 @@ def create_app():
 
         from app.service.recipe import RecipeService
         try:
+            # Call the RecipeService to add the recipe
             recipe, message = RecipeService.add_recipe(
                 name=name,
                 ingredients=ingredients,
@@ -88,6 +91,7 @@ def create_app():
             )
             if recipe is None:
                 return jsonify({'error': message}), 400
+
             return jsonify({
                 'message': message,
                 'recipe': {

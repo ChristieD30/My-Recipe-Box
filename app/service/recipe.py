@@ -1,22 +1,25 @@
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from app.model.recipes import Recipe
+from app.model.recipes import Recipe, RecipeAdditionalInfo  # Importing the new model
 from app.enums import Category
 from app import db
 
 
 class RecipeService:
     @staticmethod
-    def add_recipe(name, ingredients, instructions, category, user_id=None):
+    def add_recipe(name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None):
         try:
+            # Check if the recipe already exists for the user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please rename it."
             
+            # Validate the category
             if category not in [cat.value for cat in Category]:
                 return None, f"Invalid category. Valid categories are: {[cat.value for cat in Category]}"
 
+            # Create new recipe object
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
@@ -24,8 +27,22 @@ class RecipeService:
                 category=category,
                 user_id=user_id  # can't leave this null
             )
+            
             db.session.add(new_recipe)
+            db.session.commit()  # Commit the recipe first to get the ID
+
+            # Now create the additional info for the recipe
+            additional_info = RecipeAdditionalInfo(
+                prep_time=prep_time,
+                cook_time=cook_time,
+                total_time=total_time,
+                servings=servings,
+                recipe_id=new_recipe.id  # Link additional info with the new recipe
+            )
+
+            db.session.add(additional_info)
             db.session.commit()
+
             message = f"Your recipe '{name}' is added."
             return new_recipe, message
         except Exception as e:
@@ -42,20 +59,24 @@ class RecipeService:
         }
 
     @staticmethod
-    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None):
+    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None):
         try:
+            # Fetch the original recipe to duplicate
             original = Recipe.query.filter_by(id=_id).first()
             if not original:
                 return None, "Unable to duplicate recipe."
 
+            # Set values for the new recipe
             name = _name or original.name + " (Copy)"
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
 
+            # Check if the recipe with this name already exists for the user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please choose a different name."
 
+            # Create the new duplicated recipe
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
@@ -64,7 +85,20 @@ class RecipeService:
             )
 
             db.session.add(new_recipe)
+            db.session.commit()  # Commit the new recipe first to get the ID
+
+            # Create the additional info for the duplicated recipe
+            additional_info = RecipeAdditionalInfo(
+                prep_time=prep_time or original.additional_info.prep_time,
+                cook_time=cook_time or original.additional_info.cook_time,
+                total_time=total_time or original.additional_info.total_time,
+                servings=servings or original.additional_info.servings,
+                recipe_id=new_recipe.id  # Link the additional info to the new recipe
+            )
+
+            db.session.add(additional_info)
             db.session.commit()
+
             message = f"Your updated recipe '{name}' has been created as a duplicate."
             return new_recipe, message
 
