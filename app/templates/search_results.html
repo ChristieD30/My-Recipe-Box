@@ -467,6 +467,11 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
+/* Reusable helper function (same as Browse Recipes) */
+function openRecipeDetails(id) {
+    window.location.href = `/show_recipe?recipe_id=${id}`;
+}
+
 /* ________________________________ Search Results Logic (NEW) ________________________________ */
 async function loadSearchResults() {
     const params = new URLSearchParams(window.location.search);
@@ -552,64 +557,33 @@ async function loadSearchResults() {
                             star.title = 'Remove from favorites';
                         }
                     } catch (err) {
-                        console.error('Error updating favorite:', err);
+                        console.error('Favorite toggle failed:', err);
                     }
                 });
-                noClickZone.addEventListener('click', (e) => e.stopPropagation());
             } else {
-                // guest click: show login popup
                 star.addEventListener('click', (e) => {
                     e.stopPropagation();
                     document.getElementById('loginPopup').style.display = 'flex';
                 });
-                noClickZone.addEventListener('click', (e) => e.stopPropagation());
             }
 
             card.addEventListener('click', (e) => {
                 if (!e.target.classList.contains('favorite-star') && !e.target.classList.contains('no-click-zone')) {
-                    showRecipeDetail(recipe.recipe_id);
+                    openRecipeDetails(recipe.recipe_id);
                 }
             });
 
             grid.appendChild(card);
         });
+
     } catch (err) {
         console.error('Error loading search results:', err);
+        document.getElementById('recipesGrid').innerHTML = `<p>Error loading results.</p>`;
     }
 }
 
-/* ________________________________ Original showRecipeDetail Logic (UNCHANGED) ________________________________ */
-async function showRecipeDetail(id) {
-    try {
-        const res = await fetch(`/recipe/${id}`);
-        const data = await res.json();
-        const recipe = data.recipe;
-
-        const container = document.getElementById('recipeDetail');
-        container.innerHTML = `
-            <h2>${recipe.name}</h2>
-            <img src="${recipe.image || ''}" alt="${recipe.name}">
-            <div class="recipe-meta">
-                <span><strong>Prep:</strong> ${recipe.prep_time || 'N/A'}</span> | 
-                <span><strong>Cook:</strong> ${recipe.cook_time || 'N/A'}</span> | 
-                <span><strong>Total:</strong> ${recipe.total_time || 'N/A'}</span> | 
-                <span><strong>Servings:</strong> ${recipe.servings || 'N/A'}</span>
-            </div>
-            <hr>
-            <h3>Ingredients</h3>
-            <ul>${recipe.ingredients.split('\n').map(i => `<li>${i}</li>`).join('')}</ul>
-            <h3>Instructions</h3>
-            <p>${recipe.instructions.replace(/\n/g, '<br>')}</p>
-        `;
-        document.getElementById('recipesGrid').style.display = 'none';
-        container.style.display = 'block';
-    } catch (err) {
-        console.error('Error showing recipe:', err);
-    }
-}
-
-/* Initialize search results */
-loadSearchResults();
+/* ________________________________ Run on Load ________________________________ */
+window.onload = loadSearchResults;
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
