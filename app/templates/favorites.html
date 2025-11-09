@@ -217,8 +217,8 @@ h1 {
 /* ________________________________ Favorite Star (MATCH FEATURED STYLE, inside title right corner) ________________________________ */
 .favorite-star {
     position: absolute;
-    right: 16px;                  /* move a bit left for balance */
-    top: 50%;                     /* keep vertically centered */
+    right: 16px;                  
+    top: 50%;                     
     transform: translateY(-50%);
     font-size: 1.6em;
     color: gold;
@@ -242,7 +242,7 @@ h1 {
     position: absolute;
     top: 0;
     right: 0;
-    width: 60px;  /* match new padding-right */
+    width: 60px;  
     height: 100%;
     z-index: 4;
     cursor: default;
@@ -352,7 +352,7 @@ footer {
 @media (max-width: 600px) {
     .recipe-card .recipe-name {
         font-size: 1.1em;
-        padding: 8px 50px 8px 10px; /* slightly smaller padding */
+        padding: 8px 50px 8px 10px; 
     }
 }
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
@@ -411,6 +411,11 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
+/* 🧩 Reusable helper function (same as Browse Recipes) */
+function openRecipeDetails(id) {
+    window.location.href = `/show_recipe?recipe_id=${id}`;
+}
+
 async function loadFavorites() {
     try {
         const res = await fetch('/current_user');
@@ -482,13 +487,13 @@ async function loadFavorites() {
                 e.stopPropagation();
             });
 
-            // Only clicking outside star and no-click zone opens details
+            // Only clicking outside star and no-click zone redirects to recipe details page
             card.addEventListener('click', (e) => {
                 if (
                     !e.target.classList.contains('favorite-star') &&
                     !e.target.classList.contains('no-click-zone')
                 ) {
-                    showRecipeDetail(recipe.recipe_id);
+                    openRecipeDetails(recipe.recipe_id);
                 }
             });
 
@@ -496,35 +501,6 @@ async function loadFavorites() {
         });
     } catch (err) {
         console.error('Error loading favorites:', err);
-    }
-}
-
-async function showRecipeDetail(id) {
-    try {
-        const res = await fetch(`/recipe/${id}`);
-        const data = await res.json();
-        const recipe = data.recipe;
-
-        const container = document.getElementById('recipeDetail');
-        container.innerHTML = `
-            <h2>${recipe.name}</h2>
-            <img src="${recipe.image || ''}" alt="${recipe.name}">
-            <div class="recipe-meta">
-                <span><strong>Prep:</strong> ${recipe.prep_time || 'N/A'}</span> | 
-                <span><strong>Cook:</strong> ${recipe.cook_time || 'N/A'}</span> | 
-                <span><strong>Total:</strong> ${recipe.total_time || 'N/A'}</span> | 
-                <span><strong>Servings:</strong> ${recipe.servings || 'N/A'}</span>
-            </div>
-            <hr>
-            <h3>Ingredients</h3>
-            <ul>${recipe.ingredients.split('\n').map(i => `<li>${i}</li>`).join('')}</ul>
-            <h3>Instructions</h3>
-            <p>${recipe.instructions.replace(/\n/g, '<br>')}</p>
-        `;
-        document.getElementById('favoritesGrid').style.display = 'none';
-        container.style.display = 'block';
-    } catch (err) {
-        console.error('Error showing recipe:', err);
     }
 }
 

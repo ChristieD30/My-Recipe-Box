@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipe Details | My Recipe Box</title>
+<style>
+/* ________________________________ Base Layout (CAN COPY AND PASTE) ________________________________ */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fafafa;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+}
+/* ________________________________ Base Layout (CAN COPY AND PASTE) ________________________________ */
+
+/* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
+nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* Left | Center | Right */
+    align-items: center;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 12px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.logo {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    justify-self: start;
+}
+.nav-links {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    align-items: center;
+}
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 1.1em;
+    transition: color 0.2s;
+}
+.nav-links a:hover {
+    color: #ff6f61;
+}
+
+/* Dropdown menu */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    z-index: 1;
+    border-radius: 4px;
+}
+.dropdown-content a {
+    color: #333;
+    padding: 10px 14px;
+    text-decoration: none;
+    display: block;
+    font-size: 1em;
+}
+.dropdown-content a:hover {
+    background-color: #f2f2f2;
+    color: #ff6f61;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Right side: login/signup + search */
+.right-section {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 25px;
+}
+.auth-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 1.05em;
+}
+.auth-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.auth-links a:hover {
+    color: #ff6f61;
+}
+.auth-separator {
+    color: #bbb;
+    font-weight: 300;
+}
+.search-form {
+    display: flex;
+    align-items: center;
+}
+.search-form input[type="text"] {
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    font-size: 1em;
+    width: 200px;
+}
+.search-form button {
+    margin-left: 10px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff6f61;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+.search-form button:hover {
+    background-color: #ff4b3e;
+}
+/* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
+
+/* ________________________________ Main Content (UNIQUE) ________________________________ */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;    
+    padding: 40px 20px;
+    margin-top: -10px;
+    width: 100%;
+}
+.featured-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 25px 30px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    max-width: 700px;
+    width: 100%;
+    margin: 0 auto; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+.featured-container h2 {
+    color: #ff6f61;
+    margin-top: 0;
+    text-align: center;
+}
+.featured-container p {
+    line-height: 1.6;
+    text-align: left; 
+    width: 100%;
+    margin-top: 0px; 
+}
+.featured-container strong {
+    color: #333;
+}
+.recipe-image {
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1 / 1; 
+    background-color: #f2f2f2;
+    background-size: cover;    
+    background-position: center; 
+    border-radius: 6px;
+    margin: 15px auto; 
+    display: flex;
+    justify-content: center;   
+    align-items: center;       
+    color: #999;
+    font-style: italic;
+    font-size: 1.2em;
+    text-align: center;
+}
+.recipe-meta {
+    text-align: center;
+    font-size: 0.95em;
+    color: #333;
+    margin-bottom: 15px;
+}
+.recipe-meta .bold-label {
+    font-weight: bold;
+}
+.recipe-ingredients {
+    width: 100%;
+    text-align: left; 
+    margin-top: 10px; 
+}
+.recipe-ingredients hr {
+    border: 1px solid #ccc;
+    margin: 0 0 15px 0;
+}
+.recipe-ingredients ul {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+/* ________________________________ Main Content (UNIQUE) ________________________________ */
+
+/* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #ffffff;
+    color: #666;
+    font-size: 0.9em;
+    border-top: 1px solid #eee;
+    margin-top: auto;
+}
+/* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
+
+/* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
+.favorite-star {
+    font-size: 1.8em;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.favorite-star.favorited {
+    color: gold;
+}
+.favorite-star:hover {
+    color: gold;
+}
+#loginPopup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+#loginPopup .popup-content {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+#loginPopup h2 {
+    color: #ff6f61;
+}
+#loginPopup .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.5em;
+    color: #666;
+    cursor: pointer;
+}
+#loginPopup .close-btn:hover {
+    color: #ff6f61;
+}
+#loginPopup button {
+    margin: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff6f61;
+    color: white;
+    cursor: pointer;
+}
+#loginPopup button:hover {
+    background-color: #ff4b3e;
+}
+/* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
+
+/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
+@media screen and (max-width: 1024px) {
+    nav {
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
+        padding: 12px 20px;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 8px;
+    }
+    .right-section {
+        margin-top: 12px;
+        gap: 15px;
+    }
+    .search-form input[type="text"] {
+        width: 150px; 
+    }
+}
+/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
+</style>
+</head>
+
+<body data-logged-in="false">
+
+<!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
+<nav>
+    <a href="/" class="logo">My Recipe Box</a>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <div class="dropdown">
+            <a href="#" class="no-link">Recipes ▾</a>
+            <div class="dropdown-content">
+                <a href="/browse_recipes">Browse Recipes</a>
+                <a href="/add_recipes">Add Recipe</a>
+            </div>
+        </div>
+        <a href="/favorites">Favorites</a>
+        <a href="/about">About Us</a>
+        <a href="/faq">FAQ</a>
+    </div>
+    <div class="right-section">
+        <div class="auth-links">
+            <a href="/login">Login</a>
+            <span class="auth-separator">|</span>
+            <a href="/signup">Sign Up</a>
+        </div>
+        <form method="GET" action="/search" class="search-form">
+            <input type="text" name="q" placeholder="Search recipes..." required>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</nav>
+<!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
+
+<!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
+<main>
+    <div class="featured-container" id="recipeContainer">
+        <p>Loading recipe...</p>
+    </div>
+</main>
+<!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
+
+<!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
+<footer>
+    &copy; 2025 My Recipe Box. All rights reserved.
+</footer>
+<!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
+
+<!-- ________________________________ Login Popup (UNIQUE) ________________________________ -->
+<div id="loginPopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="document.getElementById('loginPopup').style.display='none'">&times;</span>
+        <h2>Login Required</h2>
+        <p>You need to log in to favorite recipes.</p>
+        <button onclick="window.location.href='/login'">Login</button>
+        <button onclick="window.location.href='/signup'">Sign Up</button>
+    </div>
+</div>
+<!-- ________________________________ Login Popup (UNIQUE) ________________________________ -->
+
+<!-- ________________________________ JS (UNIQUE) ________________________________ -->
+<script>
+async function checkLoginStatus() {
+    try {
+        const res = await fetch('/current_user');
+        const data = await res.json();
+        document.body.dataset.loggedIn = data.logged_in ? "true" : "false";
+    } catch (err) {
+        console.error("Error checking login:", err);
+        document.body.dataset.loggedIn = "false";
+    }
+}
+
+/* ________________________________ Fixed: Get recipe_id from URL (was 'id') ________________________________ */
+function getRecipeIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('recipe_id'); // <-- fixed
+}
+
+async function loadRecipe() {
+    const recipeId = getRecipeIdFromURL();
+    const container = document.getElementById('recipeContainer');
+
+    if (!recipeId) {
+        container.innerHTML = `<p style="color:red;">No recipe ID found in URL.</p>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(`/get_recipe/${recipeId}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        if (!data.recipe) {
+            container.innerHTML = `<p style="color:red;">Recipe not found.</p>`;
+            return;
+        }
+
+        const recipe = data.recipe;
+        const ingredients = (recipe.ingredients || '').split('\n');
+
+        /* Removed duplicate numbering */
+        const instructions = (recipe.instructions || '')
+            .split('\n')
+            .map(step => step.trim())
+            .join('<br>');
+
+        container.innerHTML = `
+            <h2>${recipe.name} <span class="favorite-star" id="favStar" title="Add to favorites">★</span></h2>
+            ${recipe.image ? `<div class="recipe-image" style="background-image:url('${recipe.image}')"></div>` : `<div class="recipe-image">No Image Available</div>`}
+            <div class="recipe-meta">
+                <span class="bold-label">Prep Time:</span> ${recipe.prep_time || 'N/A'} | 
+                <span class="bold-label">Cook Time:</span> ${recipe.cook_time || 'N/A'} | 
+                <span class="bold-label">Total Time:</span> ${recipe.total_time || 'N/A'} | 
+                <span class="bold-label">Servings:</span> ${recipe.servings || 'N/A'}
+            </div>
+            <div class="recipe-ingredients">
+                <hr><strong>Ingredients:</strong>
+                <ul>${ingredients.map(ing => `<li>${ing}</li>`).join('')}</ul>
+            </div>
+            <p><strong>Instructions:</strong><br>${instructions}</p>
+        `;
+
+        const star = document.getElementById('favStar');
+        star.addEventListener('click', () => toggleFavorite(recipe.recipe_id));
+
+        // Check favorite if logged in
+        if (document.body.dataset.loggedIn === "true") {
+            const favCheck = await fetch(`/is_favorite/${recipe.recipe_id}`);
+            if (favCheck.ok) {
+                const favData = await favCheck.json();
+                if (favData.is_favorite) star.classList.add('favorited');
+            }
+        }
+
+    } catch (err) {
+        console.error("Error loading recipe:", err);
+        container.innerHTML = `<p style="color:red;">Error loading recipe.</p>`;
+    }
+}
+
+function toggleFavorite(recipeId) {
+    const loggedIn = document.body.dataset.loggedIn === "true";
+    const star = document.getElementById('favStar');
+
+    if (!loggedIn) {
+        document.getElementById('loginPopup').style.display = 'flex';
+        return;
+    }
+
+    const isFavorited = star.classList.toggle('favorited');
+    const url = isFavorited ? '/add_favorite' : '/remove_favorite';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({recipe_id: recipeId})
+    }).catch(err => {
+        console.error('Favorite toggle failed:', err);
+        star.classList.toggle('favorited');
+    });
+}
+
+checkLoginStatus().then(loadRecipe);
+</script>
+<!-- ________________________________ JS (UNIQUE) ________________________________ -->
+
+</body>
+</html>
