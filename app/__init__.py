@@ -483,5 +483,40 @@ def create_app():
             } for r in recipes
         ]})
     
+    @app.route('/search_results', methods=['GET'])
+    def search_results_json():
+        from app.model.recipes import Recipe
+
+        query = request.args.get('q', '').strip().lower()
+        if not query:
+            return jsonify({'recipes': []})
+
+        # Match recipes by name, category, or ingredients
+        recipes = Recipe.query.filter(
+            db.or_(
+                Recipe.name.ilike(f"%{query}%"),
+                Recipe.category.ilike(f"%{query}%"),
+                Recipe.ingredients.ilike(f"%{query}%")
+            )
+        ).all()
+
+        return jsonify({
+            'recipes': [
+                {
+                    'recipe_id': r.id,
+                    'name': r.name,
+                    'image': getattr(r, 'image', None),
+                    'prep_time': getattr(r, 'prep_time', None),
+                    'cook_time': getattr(r, 'cook_time', None),
+                    'total_time': getattr(r, 'total_time', None),
+                    'servings': getattr(r, 'servings', None),
+                    'category': getattr(r, 'category', None),
+                    'ingredients': getattr(r, 'ingredients', None),
+                    'instructions': getattr(r, 'instructions', None)
+                } for r in recipes
+            ]
+        })
+
+    
     return app
 
