@@ -604,8 +604,6 @@ async function loadAllRecipes(category = "All") {
                             star.title = 'Remove from favorites';
                             favorites.push(recipe.recipe_id);
                         }
-                        // update isFavorite for this card context
-                        // (note: this closed-over variable won't update automatically in this loop, but okay for UI)
                     } catch (err) {
                         console.error('Error updating favorite:', err);
                     }
@@ -626,9 +624,10 @@ async function loadAllRecipes(category = "All") {
                 });
             }
 
+            /* Updated recipe card click handler to open recipe_details.html */
             card.addEventListener('click', (e) => {
                 if (!e.target.classList.contains('favorite-star') && !e.target.classList.contains('no-click-zone')) {
-                    showRecipeDetail(recipe.recipe_id);
+                    openRecipeDetails(recipe.recipe_id);
                 }
             });
 
@@ -637,6 +636,11 @@ async function loadAllRecipes(category = "All") {
     } catch (err) {
         console.error('Error loading recipes:', err);
     }
+}
+
+/* ________________________________ Added Function: openRecipeDetails (NEW) ________________________________ */
+function openRecipeDetails(id) {
+    window.location.href = `/show_recipe?recipe_id=${id}`;
 }
 
 /* ________________________________ Original showRecipeDetail Logic (UNCHANGED) ________________________________ */

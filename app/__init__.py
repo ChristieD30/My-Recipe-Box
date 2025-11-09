@@ -477,12 +477,10 @@ def create_app():
                 'cook_time': getattr(r, 'cook_time', None),
                 'total_time': getattr(r, 'total_time', None),
                 'servings': getattr(r, 'servings', None),
-                'category': getattr(r, 'category', None),
-                'ingredients': r.ingredients,
-                'instructions': r.instructions
+                'category': getattr(r, 'category', 'Uncategorized')
             } for r in recipes
-        ]})
-    
+        ]}), 200
+
     @app.route('/search_results', methods=['GET'])
     def search_results_json():
         from app.model.recipes import Recipe
@@ -516,7 +514,27 @@ def create_app():
                 } for r in recipes
             ]
         })
-
     
+    @app.route('/show_recipe')
+    def show_recipe():
+        return render_template('show_recipe.html')
+    
+    @app.route('/get_recipe/<int:recipe_id>', methods=['GET'])
+    def get_recipe(recipe_id):
+        from app.model.recipes import Recipe
+        recipe = Recipe.query.get(recipe_id)
+        if recipe:
+            return jsonify({
+                'recipe': {
+                    'recipe_id': recipe.id,
+                    'name': recipe.name,
+                    'ingredients': recipe.ingredients,
+                    'instructions': recipe.instructions,
+                    'user_id': recipe.user_id
+                }
+            }), 200
+        else:
+            return jsonify({'error': 'Recipe not found'}), 404
+
     return app
 
