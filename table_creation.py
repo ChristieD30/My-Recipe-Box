@@ -12,9 +12,9 @@ def create_tables():
     cursor.execute("PRAGMA foreign_keys = ON;")
 
     # Drop existing tables (be careful with this in production!)
-    # cursor.execute("DROP TABLE IF EXISTS favorites;")
-    # cursor.execute("DROP TABLE IF EXISTS recipes;")
-    # cursor.execute("DROP TABLE IF EXISTS users;")
+    cursor.execute("DROP TABLE IF EXISTS favorites;")
+    cursor.execute("DROP TABLE IF EXISTS recipes;")
+    cursor.execute("DROP TABLE IF EXISTS users;")
 
     users_table_creation_query = """
     CREATE TABLE IF NOT EXISTS users (
@@ -37,6 +37,10 @@ def create_tables():
         category TEXT NOT NULL,
         user_id INTEGER NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        prep_time INTEGER,
+        cook_time INTEGER,
+        total_time INTEGER,
+        servings INTEGER,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users (id)
     );
