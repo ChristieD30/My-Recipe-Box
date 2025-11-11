@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from app.model.recipes import Recipe, RecipeAdditionalInfo  # Importing the new model
+from app.model.recipes import Recipe
 from app.enums import Category
 from app import db
 
@@ -25,23 +25,15 @@ class RecipeService:
                 ingredients=ingredients,
                 instructions=instructions,
                 category=category,
-                user_id=user_id  # can't leave this null
-            )
-            
-            db.session.add(new_recipe)
-            db.session.commit()  # Commit the recipe first to get the ID
-
-            # Now create the additional info for the recipe
-            additional_info = RecipeAdditionalInfo(
+                user_id=user_id,  # can't leave this null
                 prep_time=prep_time,
                 cook_time=cook_time,
                 total_time=total_time,
                 servings=servings,
-                recipe_id=new_recipe.id  # Link additional info with the new recipe
             )
-
-            db.session.add(additional_info)
-            db.session.commit()
+            
+            db.session.add(new_recipe)
+            db.session.commit()  # Commit the recipe first to get the ID
 
             message = f"Your recipe '{name}' is added."
             return new_recipe, message
@@ -81,23 +73,15 @@ class RecipeService:
                 name=name,
                 ingredients=ingredients,
                 instructions=instructions,
-                user_id=user_id
+                user_id=user_id,
+                prep_time=prep_time,
+                cook_time=cook_time,
+                total_time=total_time,
+                servings=servings
             )
 
             db.session.add(new_recipe)
             db.session.commit()  # Commit the new recipe first to get the ID
-
-            # Create the additional info for the duplicated recipe
-            additional_info = RecipeAdditionalInfo(
-                prep_time=prep_time or original.additional_info.prep_time,
-                cook_time=cook_time or original.additional_info.cook_time,
-                total_time=total_time or original.additional_info.total_time,
-                servings=servings or original.additional_info.servings,
-                recipe_id=new_recipe.id  # Link the additional info to the new recipe
-            )
-
-            db.session.add(additional_info)
-            db.session.commit()
 
             message = f"Your updated recipe '{name}' has been created as a duplicate."
             return new_recipe, message
