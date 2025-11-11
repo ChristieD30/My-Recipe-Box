@@ -218,6 +218,10 @@ h1 {
     overflow-wrap: anywhere;
 }
 
+.recipe-card .created-by {
+    margin-top: 6px;
+}
+
 /* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
 .favorite-star {
     position: absolute;
@@ -522,6 +526,9 @@ async function loadSearchResults() {
                         ${loggedIn
                            ? `<span class="favorite-star" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" style="color:${isFavorite ? 'gold' : '#ccc'};"></span>`
                            : `<span class="favorite-star" title="Login to favorite" style="color:#ccc;"></span>`}
+                    </div>
+                    <div class="created-by">
+                        <span>Created By: ${recipe.created_by || 'Unknown'}</span>
                     </div>
                     <div class="recipe-info">
                         <div class="row">
