@@ -331,8 +331,8 @@ def create_app():
                     _ingredients=request.form["ingredients"],
                     _instructions=request.form["instructions"],
                     _category=request.form["category"],
-                    user_id=session.get('user_id'),
-                    user_name=session.get('name')  # Use logged-in user's ID
+                    user_id=session.get('user_id'),  # Use logged-in user's ID
+                    user_full_name=session.get('name')  # Use logged-in user's name
                 )
                 
                 if fork_result[0]:  # Success
