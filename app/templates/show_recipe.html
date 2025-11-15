@@ -417,10 +417,10 @@ async function loadRecipe() {
         const recipe = data.recipe;
         const ingredients = (recipe.ingredients || '').split('\n');
 
-        /* Removed duplicate numbering */
         const instructions = (recipe.instructions || '')
             .split('\n')
-            .map(step => step.trim())
+            .map(step => step.replace(/^\s*\d+[\.\)]\s*/, '').trim())  // strip existing numbers
+            .map((step, i) => `${i + 1}. ${step}`)                    // add your numbering
             .join('<br>');
 
         container.innerHTML = `
