@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import Flask, app, redirect, request, jsonify, render_template, session, url_for
+from werkzeug.utils import secure_filename
 
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -68,8 +69,19 @@ def create_app():
         # Parse data based on content type
         if request.content_type == 'application/json':
             data = request.get_json()
+            image_location = None  # JSON requests don't include files
         else:
             data = request.form
+            # Handle image upload using service
+            image_location = None
+            if 'recipe_image' in request.files:
+                file = request.files['recipe_image']
+                if file and file.filename:  # Check if file was actually uploaded
+                    from app.service.recipe import RecipeService
+                    try:
+                        image_location = RecipeService.save_recipe_image(file)
+                    except Exception as e:
+                        return jsonify({'error': f'Error uploading image: {str(e)}'}), 400
         
         name = data.get('name')
         ingredients = data.get('ingredients')
@@ -87,7 +99,8 @@ def create_app():
                 ingredients=ingredients,
                 instructions=instructions,
                 category=category,
-                user_id=user_id
+                user_id=user_id,
+                image_location=image_location
             )
             if recipe is None:
                 return jsonify({'error': message}), 400

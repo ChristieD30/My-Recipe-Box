@@ -1,14 +1,45 @@
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, current_app
 from flask_sqlalchemy import SQLAlchemy
 from app.model.recipes import Recipe, RecipeAdditionalInfo  # Importing the new model
 from app.enums import Category
+from werkzeug.utils import secure_filename
+import os 
 from app import db
 
 
 class RecipeService:
+    # File upload configuration
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
     @staticmethod
-    def add_recipe(name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None):
+    def allowed_file(filename):
+        """Check if file has allowed extension"""
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in RecipeService.ALLOWED_EXTENSIONS
+
+    @staticmethod
+    def save_recipe_image(file):
+        """Save uploaded image and return the file path"""
+        if file and RecipeService.allowed_file(file.filename):
+            # Create uploads directory if it doesn't exist
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'recipes')
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            # Generate unique filename
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"{timestamp}_{secure_filename(file.filename)}"
+            
+            # Save file
+            file_path = os.path.join(upload_folder, filename)
+            file.save(file_path)
+            
+            # Return relative path for database storage
+            return f"uploads/recipes/{filename}"
+        return None
+
+    @staticmethod
+    def add_recipe(name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, image_location=None):
         try:
             # Check if the recipe already exists for the user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -25,7 +56,8 @@ class RecipeService:
                 ingredients=ingredients,
                 instructions=instructions,
                 category=category,
-                user_id=user_id  # can't leave this null
+                user_id=user_id,  # can't leave this null
+                image_location=image_location
             )
             
             db.session.add(new_recipe)
@@ -135,3 +167,5 @@ class RecipeService:
             return recipe, "Hello there! Your random kitchen adventure awaits. Try it before it vanishes!\n"
         else:
             return None, "No recipes found."
+
+
