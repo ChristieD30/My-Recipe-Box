@@ -6,8 +6,7 @@
         function confirmAndRefresh(event) {
             event.preventDefault(); // Stop normal form submission for now
 
-            // Ask user for confirmation
-            const confirmed = confirm("Are you sure you want to update this recipe?");
+            const confirmed = confirm("Are you sure you want to save these changes? If this isn't your recipe, a copy will be created in your collection.");
 
             if (confirmed) {
                 // Submit form if confirmed
@@ -22,8 +21,15 @@
 <body>
     <h1>Recipe: {{ recipe['name'] }}</h1>
 
+        <!-- Success/Error Messages -->
+    {% if message %}
+        <div class="message message-{{ message_type }}">
+            {{ message }}
+        </div>
+    {% endif %}
+
     <!-- Form to update the recipe -->
-    <form method="POST" onsubmit="confirmAndRefresh(event)">
+    <form method="POST" onsubmit="confirmAndRefresh(event)" enctype="multipart/form-data">
         <label for="name">Name:</label><br>
         <input type="text" id="name" name="name" value="{{ recipe['name'] }}"><br><br>
 
@@ -38,25 +44,21 @@
 
         <label for="updated">Updated:</label><br>
         <input type="text" id="updated" name="updated" readonly value="{{ recipe['updated_at'].strftime('%m/%d/%Y %I:%M:%S %p') }}"><br><br>
-
+        <!-- Add image upload field -->
+        <label for="recipe_image">Update Recipe Image (optional):</label><br>
+        <input type="file" id="recipe_image" name="recipe_image" accept="image/*"><br>
+        <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF (max 5MB)</small><br><br>
         <!-- Submit button to update the recipe -->
         <input type="submit" value="Update">
     </form>
 
-    <!-- Show Another Recipe Button -->
-    <form action="{{ url_for('get_random_recipe_route') }}" method="get">
-        <button type="submit">Show Another Recipe</button>
-    </form>
+        {% if recipe.image_location %}
+            <div class="recipe-image">
+                <img src="{{ url_for('static', filename=recipe.image_location) }}" 
+                    alt="{{ recipe.name }}" 
+                    style="max-width: 300px; height: auto; border-radius: 4px;">
+            </div>
+    {% endif %}
 
-    <!-- Navigation for previous and next recipe -->
-    <div>
-        {% if paginated_recipes.has_prev %}
-            <a href="{{ url_for('display_recipes', page=paginated_recipes.prev_num) }}">« Previous</a>
-        {% endif %}
-
-        {% if paginated_recipes.has_next %}
-            <a href="{{ url_for('display_recipes', page=paginated_recipes.next_num) }}"> Next »</a>
-        {% endif %}
-    </div>
 </body>
 </html>

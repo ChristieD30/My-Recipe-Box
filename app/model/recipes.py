@@ -12,7 +12,8 @@ class Recipe(db.Model):
     category = Column(String(50), nullable=True)  # New category field
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Made nullable
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Fixed - removed extra comma
+    image_location = Column(String(255), nullable=True) 
     prep_time = Column(Integer, nullable=True)  # in minutes
     cook_time = Column(Integer, nullable=True)  # in minutes
     total_time = Column(Integer, nullable=True)  # in minutes
@@ -21,7 +22,7 @@ class Recipe(db.Model):
     user = relationship('User', back_populates='recipes')
     favorites = relationship('Favorite', back_populates='recipe', cascade='all, delete-orphan')
     
-    def __init__(self, *, name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None):
+    def __init__(self, *, name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, image_location=None):
         self.name = name
         self.ingredients = ingredients
         self.instructions = instructions
@@ -31,6 +32,7 @@ class Recipe(db.Model):
         self.cook_time = cook_time
         self.total_time = total_time
         self.servings = servings
+        self.image_location = image_location
 
     def __repr__(self):
         return f'<Recipe {self.name!r}>'
@@ -48,5 +50,6 @@ class Recipe(db.Model):
             'prep_time': info.prep_time if info else None,
             'cook_time': info.cook_time if info else None,
             'total_time': info.total_time if info else None,
-            'servings': info.servings if info else None
+            'servings': info.servings if info else None,
+            'image_location': self.image_location,
         }

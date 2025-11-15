@@ -336,36 +336,6 @@ footer {
         <p>Please <a href="/login" style="color: #ff6f61; text-decoration: none; font-weight: 500;">login</a> to add recipes and access all features.</p>
     </div>
 
-    <!-- Recipe submission -->
-    <div id="recipeForm">
-        <h2>Add a New Recipe</h2>
-        <form method="POST" action="/add_recipe">
-            <div>
-                <label for="name">Recipe Name:</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div>
-                <label for="ingredients">Ingredients:</label>
-                <textarea id="ingredients" name="ingredients" required></textarea>
-            </div>
-            <div>
-                <label for="category">Category:</label>
-                <select id="category" name="category">
-                    <option value="Breakfast">Breakfast</option>
-                    <option value="Lunch">Lunch</option>
-                    <option value="Dinner">Dinner</option>
-                    <option value="Dessert">Dessert</option>
-                    <option value="Snack">Snack</option>
-                    <option value="Uncategorized">Uncategorized</option>
-                </select>
-            </div>
-            <div>
-                <label for="instructions">Instructions:</label>
-                <textarea id="instructions" name="instructions" required></textarea>
-            </div>
-            <input type="submit" value="Add Recipe">
-        </form>
-    </div>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 
@@ -384,6 +354,7 @@ fetch('/current_user')
         if (data.logged_in) {
             // Logged in = show user info and recipe form
             document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('loginPrompt').style.display = 'none';
             document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.name || data.username}! 👋`;
             document.getElementById('recipeForm').style.display = 'block';
         } else {

@@ -356,6 +356,31 @@ footer {
         <p>Loading recipe...</p>
     </div>
 </main>
+
+
+
+<!-- THUY This is the update button -->
+            </div>
+            
+            <!-- Update Recipe Button -->
+            <button onclick="openUpdatePage()" style="padding: 10px 20px; margin: 15px 0; font-size: 16px; background-color: #ff6f61; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Update Recipe
+            </button>
+            
+            <div class="recipe-ingredients">
+<script>
+    function openUpdatePage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipeId = urlParams.get('recipe_id');
+        
+        if (recipeId) {
+            // Redirect to display page for that specific recipe
+            window.location.href = `/display?page=${recipeId}`;
+        } else {
+            alert('Error: Recipe ID not found');
+        }
+    }
+</script>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
@@ -450,6 +475,8 @@ async function loadRecipe() {
                 if (favData.is_favorite) star.classList.add('favorited');
             }
         }
+
+
 
     } catch (err) {
         console.error("Error loading recipe:", err);
