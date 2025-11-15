@@ -13,19 +13,24 @@ class Recipe(db.Model):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Made nullable
+    prep_time = Column(Integer, nullable=True)  # in minutes
+    cook_time = Column(Integer, nullable=True)  # in minutes
+    total_time = Column(Integer, nullable=True)  # in minutes
+    servings = Column(Integer, nullable=True)  # number of servings
     
     user = relationship('User', back_populates='recipes')
     favorites = relationship('Favorite', back_populates='recipe', cascade='all, delete-orphan')
     
-    # Relationship to the new 'RecipeAdditionalInfo' table (for prep_time, cook_time, total_time, servings)
-    additional_info = relationship('RecipeAdditionalInfo', uselist=False, back_populates='recipe')
-
-    def __init__(self, *, name, ingredients, instructions, category, user_id=None):
+    def __init__(self, *, name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None):
         self.name = name
         self.ingredients = ingredients
         self.instructions = instructions
         self.category = category
         self.user_id = user_id
+        self.prep_time = prep_time
+        self.cook_time = cook_time
+        self.total_time = total_time
+        self.servings = servings
 
     def __repr__(self):
         return f'<Recipe {self.name!r}>'
@@ -45,27 +50,3 @@ class Recipe(db.Model):
             'total_time': info.total_time if info else None,
             'servings': info.servings if info else None
         }
-
-
-# New table for additional information related to Recipe
-class RecipeAdditionalInfo(db.Model):
-    __tablename__ = 'recipe_additional_info'
-    id = Column(Integer, primary_key=True)
-    prep_time = Column(Integer, nullable=True)  # in minutes
-    cook_time = Column(Integer, nullable=True)  # in minutes
-    total_time = Column(Integer, nullable=True)  # in minutes
-    servings = Column(Integer, nullable=True)  # number of servings
-
-    # Foreign key back to the Recipe table
-    recipe_id = Column(Integer, ForeignKey('recipes.id'), nullable=False)
-    recipe = relationship('Recipe', back_populates='additional_info')
-
-    def __init__(self, prep_time, cook_time, total_time, servings, recipe_id):
-        self.prep_time = prep_time
-        self.cook_time = cook_time
-        self.total_time = total_time
-        self.servings = servings
-        self.recipe_id = recipe_id
-
-    def __repr__(self):
-        return f"<RecipeAdditionalInfo(recipe_id={self.recipe_id}, prep_time={self.prep_time}, cook_time={self.cook_time})>"

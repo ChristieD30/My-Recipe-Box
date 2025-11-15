@@ -419,7 +419,8 @@ def create_app():
     
     @app.route('/get_recipe_by_id/<int:recipe_id>', methods=['GET'])
     def get_recipe_by_id(recipe_id):
-        from app.models import Recipe
+#        from app.models import Recipe
+        from app.service.recipe import Recipe
         recipe = Recipe.query.get(recipe_id)
         if recipe:
             return jsonify({
