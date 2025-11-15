@@ -370,12 +370,8 @@ def create_app():
             # Re-fetch updated recipe data for display
             paginated_recipes = Recipe.query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
             recipe = paginated_recipes.items[0] if paginated_recipes.items else None
-            
-            return render_template('display_recipes.html', 
-                                 recipe=recipe, 
-                                 paginated_recipes=paginated_recipes,
-                                 message=message,
-                                 message_type=message_type)
+            return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes, message=message, message_type=message_type)
+
 
         return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes)
     

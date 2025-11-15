@@ -29,7 +29,7 @@
     {% endif %}
 
     <!-- Form to update the recipe -->
-    <form method="POST" onsubmit="confirmAndRefresh(event)">
+    <form method="POST" onsubmit="confirmAndRefresh(event)" enctype="multipart/form-data">
         <label for="name">Name:</label><br>
         <input type="text" id="name" name="name" value="{{ recipe['name'] }}"><br><br>
 
@@ -44,7 +44,10 @@
 
         <label for="updated">Updated:</label><br>
         <input type="text" id="updated" name="updated" readonly value="{{ recipe['updated_at'].strftime('%m/%d/%Y %I:%M:%S %p') }}"><br><br>
-
+        <!-- Add image upload field -->
+        <label for="recipe_image">Update Recipe Image (optional):</label><br>
+        <input type="file" id="recipe_image" name="recipe_image" accept="image/*"><br>
+        <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF (max 5MB)</small><br><br>
         <!-- Submit button to update the recipe -->
         <input type="submit" value="Update">
     </form>
@@ -57,20 +60,5 @@
             </div>
     {% endif %}
 
-    <!-- Show Another Recipe Button -->
-    <form action="{{ url_for('get_random_recipe') }}" method="get">
-        <button type="submit">Show Another Recipe</button>
-    </form>
-
-    <!-- Navigation for previous and next recipe -->
-    <div>
-        {% if paginated_recipes.has_prev %}
-            <a href="{{ url_for('display_recipes', page=paginated_recipes.prev_num) }}">« Previous</a>
-        {% endif %}
-
-        {% if paginated_recipes.has_next %}
-            <a href="{{ url_for('display_recipes', page=paginated_recipes.next_num) }}"> Next »</a>
-        {% endif %}
-    </div>
 </body>
 </html>
