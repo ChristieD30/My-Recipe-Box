@@ -6,8 +6,7 @@
         function confirmAndRefresh(event) {
             event.preventDefault(); // Stop normal form submission for now
 
-            // Ask user for confirmation
-            const confirmed = confirm("Are you sure you want to update this recipe?");
+            const confirmed = confirm("Are you sure you want to save these changes? If this isn't your recipe, a copy will be created in your collection.");
 
             if (confirmed) {
                 // Submit form if confirmed
@@ -21,6 +20,13 @@
 </head>
 <body>
     <h1>Recipe: {{ recipe['name'] }}</h1>
+
+        <!-- Success/Error Messages -->
+    {% if message %}
+        <div class="message message-{{ message_type }}">
+            {{ message }}
+        </div>
+    {% endif %}
 
     <!-- Form to update the recipe -->
     <form method="POST" onsubmit="confirmAndRefresh(event)">
@@ -43,8 +49,16 @@
         <input type="submit" value="Update">
     </form>
 
+        {% if recipe.image_location %}
+            <div class="recipe-image">
+                <img src="{{ url_for('static', filename=recipe.image_location) }}" 
+                    alt="{{ recipe.name }}" 
+                    style="max-width: 300px; height: auto; border-radius: 4px;">
+            </div>
+    {% endif %}
+
     <!-- Show Another Recipe Button -->
-    <form action="{{ url_for('get_random_recipe_route') }}" method="get">
+    <form action="{{ url_for('get_random_recipe') }}" method="get">
         <button type="submit">Show Another Recipe</button>
     </form>
 

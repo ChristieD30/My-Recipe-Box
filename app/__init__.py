@@ -16,6 +16,10 @@ def create_app():
     # Add secret key for sessions
     app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
     
+    # Configure file uploads
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+    
     # Configure the SQLite database
     basedir = os.path.abspath(os.path.dirname(__file__))
     db_path = os.path.join(basedir, '..', 'recipe_box.db')
@@ -65,7 +69,6 @@ def create_app():
         auth_check = require_login()
         if auth_check:
             return auth_check
-
         # Parse data based on content type
         if request.content_type == 'application/json':
             data = request.get_json()
@@ -82,7 +85,7 @@ def create_app():
                         image_location = RecipeService.save_recipe_image(file)
                     except Exception as e:
                         return jsonify({'error': f'Error uploading image: {str(e)}'}), 400
-        
+
         name = data.get('name')
         ingredients = data.get('ingredients')
         category = data.get('category', 'Uncategorized')  # Default category if not provided
@@ -105,17 +108,9 @@ def create_app():
             if recipe is None:
                 return jsonify({'error': message}), 400
 
-            return jsonify({
-                'message': message,
-                'recipe': {
-                    'recipe_id': recipe.id,
-                    'name': recipe.name,
-                    'ingredients': recipe.ingredients,
-                    'instructions': recipe.instructions,
-                    'category': recipe.category,
-                    'user_id': recipe.user_id
-                }
-            }), 201
+        
+            return render_template('display_recipes.html', recipe=recipe, message=message, paginated_recipes=None)
+
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
@@ -328,16 +323,59 @@ def create_app():
         per_page = 1
         paginated_recipes = Recipe.query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
         recipe = paginated_recipes.items[0] if paginated_recipes.items else None
+
+
         
         if request.method == "POST":
-            # Update recipe data
-            recipe.name = request.form["name"]
-            recipe.ingredients = request.form["ingredients"]
-            recipe.instructions = request.form["instructions"]
-            recipe.category = request.form["category"]
-            recipe.updated_at = datetime.now().astimezone()
-            db.session.commit()
-            return redirect(url_for("display_recipes", page=page))
+            message = None
+            message_type = None
+            
+            if recipe.user_id != session.get('user_id'):
+                # Fork the recipe - create a duplicate with user's changes
+                fork_result = RecipeService.update_recipe_as_duplicate(
+                    _id=recipe.id,
+                    _name=request.form["name"],
+                    _ingredients=request.form["ingredients"],
+                    _instructions=request.form["instructions"],
+                    _category=request.form["category"],
+                    user_id=session.get('user_id'),  # Use logged-in user's ID
+                    user_full_name=session.get('name')  # Use logged-in user's name
+                )
+                
+                if fork_result[0]:  # Success
+                    message = f"Recipe forked! Your version '{request.form['name']}' has been saved to your collection."
+                    message_type = "success"
+                else:  # Error
+                    message = f"Error forking recipe: {fork_result[1]}"
+                    message_type = "error"
+                    
+            else:
+                # Update recipe data (user owns this recipe)
+                owner_update_result = RecipeService.owner_update_recipe(
+                    recipe_id=recipe.id,
+                    name=request.form["name"],
+                    ingredients=request.form["ingredients"],
+                    instructions=request.form["instructions"],
+                    category=request.form["category"],
+                    user_id=recipe.user_id
+                )
+                
+                if owner_update_result[0]:  # Success
+                    message = f"Recipe '{owner_update_result[0].name}' updated successfully!"
+                    message_type = "success"
+                else:  # Error
+                    message = f"Error updating recipe: {owner_update_result[1]}"
+                    message_type = "error"
+            
+            # Re-fetch updated recipe data for display
+            paginated_recipes = Recipe.query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
+            recipe = paginated_recipes.items[0] if paginated_recipes.items else None
+            
+            return render_template('display_recipes.html', 
+                                 recipe=recipe, 
+                                 paginated_recipes=paginated_recipes,
+                                 message=message,
+                                 message_type=message_type)
 
         return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes)
     

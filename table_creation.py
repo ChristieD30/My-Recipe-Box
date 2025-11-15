@@ -41,6 +41,7 @@ def create_tables():
         cook_time INTEGER,
         total_time INTEGER,
         servings INTEGER,
+        image_location VARCHAR(255),
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users (id)
     );

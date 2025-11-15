@@ -57,11 +57,11 @@ class RecipeService:
                 instructions=instructions,
                 category=category,
                 user_id=user_id,  # can't leave this null
-                image_location=image_location
+                image_location=image_location,
                 prep_time=prep_time,
                 cook_time=cook_time,
                 total_time=total_time,
-                servings=servings,
+                servings=servings
             )
             
             db.session.add(new_recipe)
@@ -83,17 +83,18 @@ class RecipeService:
         }
 
     @staticmethod
-    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None):
+    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, _category=None, user_full_name=None, _image_location=None):
         try:
             # Fetch the original recipe to duplicate
             original = Recipe.query.filter_by(id=_id).first()
             if not original:
                 return None, "Unable to duplicate recipe."
 
-            # Set values for the new recipe
-            name = _name or original.name + " (Copy)"
+            name = f"{_name or original.name} ({user_full_name} Copy)"
+            category = _category or original.category
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
+            image_location = _image_location or original.image_location
 
             # Check if the recipe with this name already exists for the user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -109,7 +110,9 @@ class RecipeService:
                 prep_time=prep_time,
                 cook_time=cook_time,
                 total_time=total_time,
-                servings=servings
+                servings=servings,
+                image_location=image_location,
+                category=category
             )
 
             db.session.add(new_recipe)
@@ -152,4 +155,41 @@ class RecipeService:
         else:
             return None, "No recipes found."
 
+    @staticmethod
+    def update_recipe(recipe_id, name=None, ingredients=None, instructions=None, category=None, user_id=None, image_location=None):
+        try:
+            # Ensure the recipe exists and is owned by the provided user_id
+            recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first()
+            if not recipe:
+                return None, "Recipe not found or you do not have permission to update it."
+            # Update fields when provided
+            if name:
+                # Check for name uniqueness for this user
+                existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
+                if existing and existing.id != recipe_id:
+                    return None, "Recipe name already exists. Please choose a different name."
+                recipe.name = name
 
+            if ingredients:
+                recipe.ingredients = ingredients
+
+            if instructions:
+                recipe.instructions = instructions
+            
+            if image_location:
+                recipe.image_location = image_location
+
+            if category:
+                if category not in [cat.value for cat in Category]:
+                    return None, f"Invalid category. Valid categories are: {[cat.value for cat in Category]}"
+                recipe.category = category
+
+            recipe.updated_at = datetime.utcnow()
+            db.session.commit()
+            message = f"Your recipe '{recipe.name}' has been updated."
+            return recipe, message
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating recipe: {str(e)}")
+            raise
