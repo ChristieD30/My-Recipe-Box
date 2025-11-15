@@ -15,9 +15,6 @@ def create_tables():
     cursor.execute("DROP TABLE IF EXISTS favorites;")
     cursor.execute("DROP TABLE IF EXISTS recipes;")
     cursor.execute("DROP TABLE IF EXISTS users;")
-    cursor.execute("DROP TABLE IF EXISTS favorites;")
-    cursor.execute("DROP TABLE IF EXISTS recipes;")
-    cursor.execute("DROP TABLE IF EXISTS users;")
 
     users_table_creation_query = """
     CREATE TABLE IF NOT EXISTS users (

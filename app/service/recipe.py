@@ -2,7 +2,6 @@ from datetime import datetime
 from flask import Flask, request, jsonify, current_app
 from flask_sqlalchemy import SQLAlchemy
 from app.model.recipes import Recipe
-from app.model.recipes import Recipe
 from app.enums import Category
 from werkzeug.utils import secure_filename
 import os 
