@@ -161,7 +161,7 @@ h1 {
     line-height: 1.4;
 }
 
-/* Featured recipe container: recipe name, image, ingredients, and instructions */
+/* Featured recipe container */
 .featured-container {
     background: #fff;
     border-radius: 8px;
@@ -182,7 +182,7 @@ h1 {
     text-align: center;
 }
 
-/* Recipe instructions and text format */
+/* Instructions text */
 .featured-container p {
     line-height: 1.6;
     text-align: left; 
@@ -190,7 +190,7 @@ h1 {
     margin-top: 0px; 
 }
 
-/* Bold for text inside recipe content */
+/* Bold inside recipe content */
 .featured-container strong {
     color: #333;
 }
@@ -214,7 +214,7 @@ h1 {
     text-align: center;
 }
 
-/* For: prep time, cook time, total time. servings */
+/* Recipe meta info */
 .recipe-meta {
     text-align: center;
     font-size: 0.95em;
@@ -222,25 +222,20 @@ h1 {
     margin-bottom: 15px;
 }
 
-/* Bold for above ^ */
 .recipe-meta .bold-label {
     font-weight: bold;
 }
 
-/* Divider and ingredients */
+/* Ingredients */
 .recipe-ingredients {
     width: 100%;
     text-align: left; 
     margin-top: 10px; 
 }
-
-/* Divider line */
 .recipe-ingredients hr {
     border: 1px solid #ccc;
     margin: 0 0 15px 0;
 }
-
-/* Ingredients list */
 .recipe-ingredients ul {
     padding-left: 20px;
     margin-top: 5px;
@@ -337,6 +332,22 @@ footer {
 }
 /* ________________________________ Favorite Star + Popup (UNIQUE) ________________________________ */
 
+/* ________________________________ Update/Copy Recipe Link (NEW) ________________________________ */
+.update-link {
+    font-size: 1em;
+    color: #333;
+    text-decoration: none;
+    margin-top: 2px; /* close to title */
+    display: block;
+    text-align: center;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.update-link:hover {
+    color: #ff6f61;
+}
+/* ________________________________ Update/Copy Link END ________________________________ */
+
 /* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 @media screen and (max-width: 1024px) {
     nav {
@@ -358,7 +369,6 @@ footer {
         width: 150px; 
     }
 }
-/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 </style>
 </head>
 
@@ -425,12 +435,11 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
-// Check login status from backend and store it on <body> tag
+// Check login status
 async function checkLoginStatus() {
     try {
         const res = await fetch('/current_user');
         const data = await res.json();
-        // If the user is logged in, set loggedIn to true, otherwise false
         document.body.dataset.loggedIn = data.logged_in ? "true" : "false";
     } catch (err) {
         console.error("Error checking login status:", err);
@@ -438,7 +447,7 @@ async function checkLoginStatus() {
     }
 }
 
-// Fetch and display a random featured recipe
+// Load a random featured recipe
 function loadFeaturedRecipe() {
     fetch('/random_recipe')
         .then(r => r.json())
@@ -449,9 +458,19 @@ function loadFeaturedRecipe() {
             if (data.recipe) {
                 const recipe = data.recipe;
                 title.innerHTML = "Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!";
-                const instructionsWithNumbers = recipe.instructions.split('\n').map((step, i) => `${i + 1}. ${step.replace(/^\d+\.\s*/, '')}`).join('<br>');
+
+                const instructionsWithNumbers =
+                    recipe.instructions.split('\n').map((step, i) =>
+                        `${i + 1}. ${step.replace(/^\d+\.\s*/, '')}`
+                    ).join('<br>');
+
                 container.innerHTML = ` 
                     <h2>${recipe.name} <span class="favorite-star" id="favStar" title="Add to favorites">★</span></h2>
+
+                    <a href="/display?page=${recipe.recipe_id}" class="update-link">
+                        Update/Copy Recipe
+                    </a>
+
                     ${recipe.image ? `<div class="recipe-image" style="background-image:url('${recipe.image}')"></div>` : `<div class="recipe-image">No Image Available</div>`}
                     <div class="recipe-meta">
                         <span class="bold-label">Prep Time:</span> ${recipe.prep_time || 'N/A'} | 
@@ -469,7 +488,7 @@ function loadFeaturedRecipe() {
                 const star = document.getElementById('favStar');
                 star.addEventListener('click', () => toggleFavorite(recipe.recipe_id));
 
-                // If logged in, check if this recipe is already a favorite
+                // Check favorite status if logged in
                 if (document.body.dataset.loggedIn === "true") {
                     try {
                         const favRes = await fetch(`/is_favorite/${recipe.recipe_id}`);
@@ -498,12 +517,10 @@ function toggleFavorite(recipeId) {
     const star = document.getElementById('favStar');
 
     if (!isLoggedIn) {
-        // Show the login popup only if the user is not logged in
         document.getElementById('loginPopup').style.display = 'flex';
         return;
     }
 
-    // Toggle UI state immediately
     star.classList.toggle('favorited');
 
     const isFavorited = star.classList.contains('favorited');
@@ -516,12 +533,11 @@ function toggleFavorite(recipeId) {
     })
     .catch(err => {
         console.error('Favorite toggle failed:', err);
-        // Revert UI if request fails
         star.classList.toggle('favorited');
     });
 }
 
-// Auto-load recipe 
+// Load recipe on page start
 checkLoginStatus().then(() => {
     loadFeaturedRecipe();
 });
