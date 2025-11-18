@@ -219,6 +219,19 @@ main {
 }
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
 
+/* Update/Copy link */
+.update-link {
+    font-size: 1em;
+    color: #333; /* nav default */
+    text-decoration: none;
+    margin-bottom: 2px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.update-link:hover {
+    color: #ff6f61; /* nav hover color */
+}
+
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 footer {
     text-align: center;
@@ -357,31 +370,17 @@ footer {
     </div>
 </main>
 
+<!-- OLD UPDATE BUTTON BLOCK REMOVED (no longer needed) -->
 
-
-<!-- THUY This is the update button -->
-            </div>
-            
-            <!-- Update Recipe Button -->
-            <button onclick="openUpdatePage()" style="padding: 10px 20px; margin: 15px 0; font-size: 16px; background-color: #ff6f61; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Update Recipe
-            </button>
-            
-            <div class="recipe-ingredients">
 <script>
-    function openUpdatePage() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const recipeId = urlParams.get('recipe_id');
-        
+    function openUpdatePage(recipeId) {
         if (recipeId) {
-            // Redirect to display page for that specific recipe
             window.location.href = `/display?page=${recipeId}`;
         } else {
             alert('Error: Recipe ID not found');
         }
     }
 </script>
-<!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
 <footer>
@@ -444,12 +443,20 @@ async function loadRecipe() {
 
         const instructions = (recipe.instructions || '')
             .split('\n')
-            .map(step => step.replace(/^\s*\d+[\.\)]\s*/, '').trim())  // strip existing numbers
-            .map((step, i) => `${i + 1}. ${step}`)                    // add your numbering
+            .map(step => step.replace(/^\s*\d+[\.\)]\s*/, '').trim())
+            .map((step, i) => `${i + 1}. ${step}`)
             .join('<br>');
 
         container.innerHTML = `
-            <h2>${recipe.name} <span class="favorite-star" id="favStar" title="Add to favorites">★</span></h2>
+            <h2>${recipe.name} 
+                <span class="favorite-star" id="favStar" title="Add to favorites">★</span>
+            </h2>
+
+            <!-- NEW Update/Copy Recipe link -->
+            <a class="update-link" href="/display?page=${recipe.recipe_id}">
+                Update/Copy Recipe
+            </a>
+
             ${recipe.image ? `<div class="recipe-image" style="background-image:url('${recipe.image}')"></div>` : `<div class="recipe-image">No Image Available</div>`}
             <div class="recipe-meta">
                 <span class="bold-label">Prep Time:</span> ${recipe.prep_time || 'N/A'} | 
@@ -467,7 +474,6 @@ async function loadRecipe() {
         const star = document.getElementById('favStar');
         star.addEventListener('click', () => toggleFavorite(recipe.recipe_id));
 
-        // Check favorite if logged in
         if (document.body.dataset.loggedIn === "true") {
             const favCheck = await fetch(`/is_favorite/${recipe.recipe_id}`);
             if (favCheck.ok) {
@@ -475,8 +481,6 @@ async function loadRecipe() {
                 if (favData.is_favorite) star.classList.add('favorited');
             }
         }
-
-
 
     } catch (err) {
         console.error("Error loading recipe:", err);
