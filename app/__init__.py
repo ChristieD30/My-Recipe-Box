@@ -515,7 +515,8 @@ def create_app():
                     'servings': getattr(r, 'servings', None),
                     'category': getattr(r, 'category', None),
                     'ingredients': getattr(r, 'ingredients', None),
-                    'instructions': getattr(r, 'instructions', None)
+                    'instructions': getattr(r, 'instructions', None),
+                    'created_by': r.user.username if r.user else None
                 } for r in recipes
             ]
         })
