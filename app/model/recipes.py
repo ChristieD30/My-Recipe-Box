@@ -47,6 +47,7 @@ class Recipe(db.Model):
             'instructions': self.instructions,
             'category': self.category,
             'user_id': self.user_id,
+            'created_by': self.user.username if self.user else None,
             'prep_time': info.prep_time if info else None,
             'cook_time': info.cook_time if info else None,
             'total_time': info.total_time if info else None,
