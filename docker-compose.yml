@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:5000"  # Use port 3000 to avoid conflicts
+    volumes:
+      - ./app/static/uploads:/app/app/static/uploads
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=dev-secret-key-change-in-production
+    restart: unless-stopped
+
+volumes:
+  uploads_data:

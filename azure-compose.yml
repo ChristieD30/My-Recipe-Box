@@ -1,0 +1,17 @@
+# azure-compose.yml
+version: '3.8'
+
+services:
+  web:
+    image: recipe-box:latest
+    ports:
+      - "80:5000"
+    environment:
+      - SECRET_KEY=your-production-secret-key-change-this
+      - FLASK_ENV=production
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1.5G
