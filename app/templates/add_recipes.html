@@ -384,11 +384,11 @@ footer {
                 <label for="instructions">Instructions:</label>
                 <textarea id="instructions" name="instructions" required></textarea>
             </div>
-                        <div>
-            <label for="recipe_image">Recipe Image (optional):</label>
-            <input type="file" id="recipe_image" name="recipe_image" accept="image/*">
-            <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF (max 5MB)</small>
-             </div>
+            <div>
+                <label for="recipe_image">Recipe Image (optional):</label>
+                <input type="file" id="recipe_image" name="recipe_image" accept="image/*">
+                <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF (max 5MB)</small>
+            </div>
             <input type="submit" value="Add Recipe">
         </form>
     </div>
@@ -436,6 +436,48 @@ function logout() {
         });
 }
 
+// ________________________________ Recipe Editing / Copying Script ________________________________
+// Check for recipe_id in URL
+function getRecipeIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("recipe_id");
+}
+
+// Prefill the form for update/copy mode
+async function loadRecipeForEditing() {
+    const recipeId = getRecipeIdFromURL();
+    if (!recipeId) return; // Normal add mode → do nothing
+
+    try {
+        const response = await fetch(`/get_recipe/${recipeId}`);
+        if (!response.ok) throw new Error("Recipe not found");
+        
+        const data = await response.json();
+        const recipe = data.recipe;
+
+        // Prefill everything
+        document.getElementById('name').value = recipe.name || "";
+        document.getElementById('ingredients').value = recipe.ingredients || "";
+        document.getElementById('prep_time').value = recipe.prep_time || "";
+        document.getElementById('cook_time').value = recipe.cook_time || "";
+        document.getElementById('total_time').value = recipe.total_time || "";
+        document.getElementById('servings').value = recipe.servings || "";
+        document.getElementById('category').value = recipe.category || "Uncategorized";
+        document.getElementById('instructions').value = recipe.instructions || "";
+
+        // Change form title + button to "Copy/Update"
+        document.querySelector("#recipeForm h2").textContent = "Copy or Update Recipe";
+        document.querySelector("#recipeForm input[type='submit']").value = "Save Copy";
+
+    } catch (err) {
+        console.error("Error loading recipe:", err);
+    }
+}
+
+// Run after login check completes
+setTimeout(() => {
+    loadRecipeForEditing();
+}, 300);
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 

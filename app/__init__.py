@@ -587,6 +587,59 @@ def create_app():
             }), 200
         else:
             return jsonify({'error': 'Recipe not found'}), 404
+        
+    @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
+    def update_recipe(recipe_id):
+        from app.service.recipe import RecipeService
+
+        auth_check = require_login()
+        if auth_check:
+            return auth_check
+
+        data = request.form
+
+        name = data.get("name")
+        ingredients = data.get("ingredients")
+        instructions = data.get("instructions")
+        category = data.get("category")
+        user_id = session['user_id']
+
+        # Determine if user owns this recipe
+        recipe = Recipe.query.get(recipe_id)
+
+        if not recipe:
+            return jsonify({'error': 'Recipe not found'}), 404
+
+        if recipe.user_id == user_id:
+            # Owner update
+            updated, msg = RecipeService.owner_update_recipe(
+                recipe_id=recipe_id,
+                name=name,
+                ingredients=ingredients,
+                instructions=instructions,
+                category=category,
+                user_id=user_id
+            )
+            if not updated:
+                return jsonify({'error': msg}), 400
+
+            return redirect(f"/show_recipe?recipe_id={recipe_id}")
+
+        else:
+            # Fork update
+            forked, msg = RecipeService.update_recipe_as_duplicate(
+                _id=recipe_id,
+                _name=name,
+                _ingredients=ingredients,
+                _instructions=instructions,
+                _category=category,
+                user_id=user_id,
+                user_full_name=session.get('name')
+            )
+            if not forked:
+                return jsonify({'error': msg}), 400
+
+            return redirect(f"/show_recipe?recipe_id={forked.id}")
 
     return app
 
