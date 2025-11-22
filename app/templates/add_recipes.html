@@ -139,6 +139,39 @@ nav {
 .search-form button:hover {
     background-color: #ff4b3e;
 }
+
+/* Popup for duplicate recipe name */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+}
+
+.popup-box {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 350px;
+    width: 90%;
+}
+
+.popup-box button {
+    margin-top: 15px;
+    padding: 10px 18px;
+    background-color: #ff6f61;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
@@ -401,8 +434,25 @@ footer {
 </footer>
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
 
+<!-- Popup: Recipe Name Already Exists -->
+<div id="nameExistsPopup" class="popup-overlay">
+    <div class="popup-box">
+        <h3>Recipe Name Already Exists</h3>
+        <p>Please choose a different name.</p>
+        <button onclick="closeNameExistsPopup()">OK</button>
+    </div>
+</div>
+
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
+/* Popup functions */
+function showNameExistsPopup() {
+    document.getElementById('nameExistsPopup').style.display = 'flex';
+}
+
+function closeNameExistsPopup() {
+    document.getElementById('nameExistsPopup').style.display = 'none';
+}
 // Fetch current user info + update interface 
 fetch('/current_user')
     .then(response => response.json())
@@ -478,6 +528,29 @@ async function loadRecipeForEditing() {
 setTimeout(() => {
     loadRecipeForEditing();
 }, 300);
+
+// Intercept Add/Update Recipe form submission
+document.querySelector("#recipeForm form").addEventListener("submit", async function(event) {
+    event.preventDefault(); // stop normal page reload
+
+    const formData = new FormData(this);
+
+    const response = await fetch("/add_recipe", {
+        method: "POST",
+        body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.error === "Recipe name already exists. Please rename it.") {
+        showNameExistsPopup();
+        return;
+    }
+
+    if (result.success) {
+        window.location.href = `/recipe_details/${result.recipe_id}`;
+    }
+});
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
