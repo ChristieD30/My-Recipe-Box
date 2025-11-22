@@ -467,7 +467,8 @@ function loadFeaturedRecipe() {
                 container.innerHTML = ` 
                     <h2>${recipe.name} <span class="favorite-star" id="favStar" title="Add to favorites">★</span></h2>
 
-                    <a href="/display?page=${recipe.recipe_id}" class="update-link">
+                    <!-- UPDATED LINK (matches recipe_details.html) -->
+                    <a class="update-link" href="/add_recipes?recipe_id=${recipe.recipe_id}">
                         Update/Copy Recipe
                     </a>
 
