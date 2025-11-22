@@ -453,7 +453,6 @@ function showNameExistsPopup() {
 function closeNameExistsPopup() {
     document.getElementById('nameExistsPopup').style.display = 'none';
 }
-
 // Fetch current user info + update interface 
 fetch('/current_user')
     .then(response => response.json())
@@ -461,66 +460,18 @@ fetch('/current_user')
         if (data.logged_in) {
             // Logged in = show user info and recipe form
             document.getElementById('userInfo').style.display = 'block';
-            document.getElementById('welcomeMessage').textContent =
-                `Welcome back, ${data.name || data.username}! 👋`;
+            document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.name || data.username}! 👋`;
             document.getElementById('recipeForm').style.display = 'block';
-
-            // Attach submit handler safely after form exists
-            waitForFormAndAttach();
         } else {
             // Logged out = show login prompt
             document.getElementById('loginPrompt').style.display = 'block';
         }
     })
     .catch(error => {
-        console.error('Error fetching current user:', error);
+        // Display error if login fails
+        console.error('Error with login status:', error);
         document.getElementById('loginPrompt').style.display = 'block';
     });
-
-
-// Ensures form handler attaches even if the form loads late
-function waitForFormAndAttach() {
-    const form = document.querySelector("#recipeForm form");
-
-    if (form) {
-        // Prevent double attaching
-        if (!form.dataset.handlerAttached) {
-            form.dataset.handlerAttached = "true";
-
-            form.addEventListener("submit", async function(event) {
-                event.preventDefault();
-
-                const formData = new FormData(this);
-
-                try {
-                    const response = await fetch("/add_recipe", {
-                        method: "POST",
-                        body: formData
-                    });
-
-                    const result = await response.json();
-
-                    if (result.error === "Recipe name already exists. Please rename it.") {
-                        showNameExistsPopup();
-                        return;
-                    }
-
-                    if (result.success && result.recipe_id) {
-                        window.location.href = `/show_recipe?recipe_id=${result.recipe_id}`;
-                    }
-                } catch (err) {
-                    console.error("Error submitting recipe:", err);
-                    alert("An error occurred. Please try again.");
-                }
-            });
-
-            console.log("✔ Form submit handler attached");
-        }
-    } else {
-        // Form not rendered yet → check again soon
-        setTimeout(waitForFormAndAttach, 50);
-    }
-}
 
 // Display logout
 function logout() {
@@ -578,6 +529,36 @@ setTimeout(() => {
     loadRecipeForEditing();
 }, 300);
 
+// Intercept Add/Update Recipe form submission
+function attachSubmitHandler() {
+    const form = document.querySelector("#recipeForm form");
+    if (!form) {
+        console.error("Form not found when trying to attach submit handler.");
+        return;
+    }
+
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault(); // stop normal page reload
+
+        const formData = new FormData(form);
+
+        const response = await fetch("/add_recipe", {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.error === "Recipe name already exists. Please rename it.") {
+            showNameExistsPopup();
+            return;
+        }
+
+        if (result.success) {
+            window.location.href = `/show_recipe?recipe_id=${result.recipe_id}`;
+        }
+    });
+}
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
