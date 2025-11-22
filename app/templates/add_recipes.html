@@ -530,27 +530,35 @@ setTimeout(() => {
 }, 300);
 
 // Intercept Add/Update Recipe form submission
-document.querySelector("#recipeForm form").addEventListener("submit", async function(event) {
-    event.preventDefault(); // stop normal page reload
-
-    const formData = new FormData(this);
-
-    const response = await fetch("/add_recipe", {
-        method: "POST",
-        body: formData
-    });
-
-    const result = await response.json();
-
-    if (result.error === "Recipe name already exists. Please rename it.") {
-        showNameExistsPopup();
+function attachSubmitHandler() {
+    const form = document.querySelector("#recipeForm form");
+    if (!form) {
+        console.error("Form not found when trying to attach submit handler.");
         return;
     }
 
-    if (result.success) {
-        window.location.href = `/recipe_details/${result.recipe_id}`;
-    }
-});
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault(); // stop normal page reload
+
+        const formData = new FormData(form);
+
+        const response = await fetch("/add_recipe", {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.error === "Recipe name already exists. Please rename it.") {
+            showNameExistsPopup();
+            return;
+        }
+
+        if (result.success) {
+            window.location.href = `/show_recipe?recipe_id=${result.recipe_id}`;
+        }
+    });
+}
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
