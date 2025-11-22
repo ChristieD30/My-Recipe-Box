@@ -569,7 +569,18 @@ def create_app():
     
     @app.route('/show_recipe')
     def show_recipe():
-        return render_template('show_recipe.html')
+        recipe_id = request.args.get("recipe_id", type=int)
+
+        if not recipe_id:
+            return "Missing recipe_id", 400
+
+        from app.model.recipes import Recipe
+        recipe = Recipe.query.get(recipe_id)
+
+        if not recipe:
+            return f"Recipe {recipe_id} not found", 404
+
+        return render_template('show_recipe.html', recipe=recipe)
     
     @app.route('/get_recipe/<int:recipe_id>', methods=['GET'])
     def get_recipe(recipe_id):
