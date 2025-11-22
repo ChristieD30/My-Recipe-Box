@@ -108,7 +108,7 @@ def create_app():
             if recipe is None:
                 return jsonify({'error': message}), 400
 
-            return redirect(f"/show_recipe?recipe_id={recipe.id}")
+            return jsonify({'success': True, 'recipe_id': recipe.id})
         
         except Exception as e:
             return jsonify({'error': str(e)}), 500
