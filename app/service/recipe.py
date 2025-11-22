@@ -39,39 +39,38 @@ class RecipeService:
         return None
 
     @staticmethod
-    def add_recipe(name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, image_location=None):
+    def add_recipe(name, ingredients, instructions, category, user_id=None, prep_time=None,
+                cook_time=None, total_time=None, servings=None, image_location=None):
         try:
             # Check if the recipe already exists for the user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
+                # Explicitly return without committing
                 return None, "Recipe name already exists. Please rename it."
-            
-            # Validate the category
-            if category not in [cat.value for cat in Category]:
-                return None, f"Invalid category. Valid categories are: {[cat.value for cat in Category]}"
 
-            # Create new recipe object
+            # Validate category
+            if category not in [cat.value for cat in Category]:
+                return None, f"Invalid category. Valid categories: {[cat.value for cat in Category]}"
+
+            # Create and add recipe
             new_recipe = Recipe(
                 name=name,
                 ingredients=ingredients,
                 instructions=instructions,
                 category=category,
-                user_id=user_id,  # can't leave this null
+                user_id=user_id,
                 image_location=image_location,
                 prep_time=prep_time,
                 cook_time=cook_time,
                 total_time=total_time,
                 servings=servings
             )
-            
             db.session.add(new_recipe)
-            db.session.commit()  # Commit the recipe first to get the ID
+            db.session.commit()  # Now safe: only commits if no duplicate
+            return new_recipe, f"Recipe '{name}' added successfully."
 
-            message = f"Your recipe '{name}' is added."
-            return new_recipe, message
         except Exception as e:
             db.session.rollback()
-            print(f"Error adding recipe: {str(e)}")
             raise
 
     @staticmethod
@@ -83,47 +82,44 @@ class RecipeService:
         }
 
     @staticmethod
-    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, _category=None, user_full_name=None, _image_location=None):
+    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None,
+                                user_id=None, prep_time=None, cook_time=None, total_time=None,
+                                servings=None, _category=None, user_full_name=None, _image_location=None):
         try:
-            # Fetch the original recipe to duplicate
-            original = Recipe.query.filter_by(id=_id).first()
+            original = Recipe.query.get(_id)
             if not original:
-                return None, "Unable to duplicate recipe."
+                return None, "Original recipe not found."
 
-            name = f"{_name or original.name} ({user_full_name} Copy)"
-            category = _category or original.category
-            ingredients = _ingredients or original.ingredients
-            instructions = _instructions or original.instructions
-            image_location = _image_location or original.image_location
+            # Construct new name: allow user to customize, add "Copy" if needed
+            base_name = _name or original.name
+            name = f"{base_name} ({user_full_name} Copy)"
 
-            # Check if the recipe with this name already exists for the user
+            # Check per-user uniqueness
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
-                return None, "Recipe name already exists. Please choose a different name."
+                return None, "You already have a recipe with this name. Please rename it."
 
-            # Create the new duplicated recipe
+            # Create duplicated recipe
             new_recipe = Recipe(
                 name=name,
-                ingredients=ingredients,
-                instructions=instructions,
+                ingredients=_ingredients or original.ingredients,
+                instructions=_instructions or original.instructions,
+                category=_category or original.category,
                 user_id=user_id,
                 prep_time=prep_time,
                 cook_time=cook_time,
                 total_time=total_time,
                 servings=servings,
-                image_location=image_location,
-                category=category
+                image_location=_image_location or original.image_location
             )
 
             db.session.add(new_recipe)
-            db.session.commit()  # Commit the new recipe first to get the ID
+            db.session.commit()
 
-            message = f"Your updated recipe '{name}' has been created as a duplicate."
-            return new_recipe, message
+            return new_recipe, f"Recipe duplicated successfully as '{name}'."
 
         except Exception as e:
             db.session.rollback()
-            print(f"Error duplicating recipe: {str(e)}")
             raise
 
     @staticmethod
@@ -166,8 +162,8 @@ class RecipeService:
             if name:
                 # Check for name uniqueness for this user
                 existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
-                if existing and existing.id != recipe_id:
-                    return None, "Recipe name already exists. Please choose a different name."
+                if existing:
+                    return None, "Recipe name already exists for your account. Please rename it."
                 recipe.name = name
 
             if ingredients:
@@ -193,3 +189,36 @@ class RecipeService:
             db.session.rollback()
             print(f"Error updating recipe: {str(e)}")
             raise
+
+@staticmethod
+def owner_update_recipe(recipe_id, name=None, ingredients=None, instructions=None,
+                        category=None, user_id=None, image_location=None):
+    try:
+        recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first()
+        if not recipe:
+            return None, "Recipe not found or you do not have permission to update it."
+
+        # Name uniqueness check
+        if name and name != recipe.name:
+            existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
+            if existing:
+                return None, "You already have a recipe with this name. Please choose a different name."
+            recipe.name = name
+
+        if ingredients:
+            recipe.ingredients = ingredients
+        if instructions:
+            recipe.instructions = instructions
+        if category:
+            recipe.category = category
+        if image_location:
+            recipe.image_location = image_location
+
+        recipe.updated_at = datetime.utcnow()
+        db.session.commit()
+
+        return recipe, f"Recipe '{recipe.name}' updated successfully."
+
+    except Exception as e:
+        db.session.rollback()
+        raise

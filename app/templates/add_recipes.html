@@ -240,6 +240,46 @@ button.logout-btn:hover {
 }
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
 
+/* ________________________________ Error Popup (NEW) ________________________________ */
+#errorPopup {
+    display: none;
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    background-color: rgba(0,0,0,0.45);
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+#errorPopup .popup-content {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    position: relative;
+}
+#errorPopup h2 {
+    color: #ff6f61;
+    margin-top: 0;
+}
+#errorPopup .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.5em;
+    color: #666;
+    cursor: pointer;
+}
+#errorPopup .close-btn:hover {
+    color: #ff6f61;
+}
+/* ________________________________ Error Popup (NEW) ________________________________ */
+
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 footer {
     text-align: center;
@@ -321,7 +361,6 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
-<!-- Main content layout for homepage and recipe submission -->
 <main>
     <h1>Welcome to My Recipe Box!</h1>
 
@@ -339,7 +378,7 @@ footer {
     <!-- Recipe submission -->
     <div id="recipeForm">
         <h2>Add a New Recipe</h2>
-        <form method="POST" action="/add_recipe" enctype="multipart/form-data">
+        <form id="addRecipeForm" method="POST" enctype="multipart/form-data">
             <div>
                 <label for="name">Recipe Name:</label>
                 <input type="text" id="name" name="name" required>
@@ -401,6 +440,16 @@ footer {
 </footer>
 <!-- ________________________________ Footer (CAN COPY AND PASTE) ________________________________ -->
 
+<!-- ________________________________ ERROR POPUP (NEW) ________________________________ -->
+<div id="errorPopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="document.getElementById('errorPopup').style.display='none'">&times;</span>
+        <h2>Error</h2>
+        <p id="errorMessage">Something went wrong.</p>
+    </div>
+</div>
+<!-- ________________________________ ERROR POPUP (NEW) ________________________________ -->
+
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
 // Fetch current user info + update interface 
@@ -408,54 +457,46 @@ fetch('/current_user')
     .then(response => response.json())
     .then(data => {
         if (data.logged_in) {
-            // Logged in = show user info and recipe form
             document.getElementById('userInfo').style.display = 'block';
             document.getElementById('welcomeMessage').textContent = `Welcome back, ${data.name || data.username}! 👋`;
             document.getElementById('recipeForm').style.display = 'block';
         } else {
-            // Logged out = show login prompt
             document.getElementById('loginPrompt').style.display = 'block';
         }
     })
     .catch(error => {
-        // Display error if login fails
         console.error('Error with login status:', error);
         document.getElementById('loginPrompt').style.display = 'block';
     });
 
-// Display logout
+// Logout
 function logout() {
     fetch('/logout', { method: 'POST' })
         .then(response => response.json())
-        .then(data => {
+        .then(() => {
             alert('Logged out successfully!');
             location.reload();
         })
-        .catch(error => {
-            console.error('Error logging out:', error);
-        });
+        .catch(error => console.error('Error logging out:', error));
 }
 
 // ________________________________ Recipe Editing / Copying Script ________________________________
-// Check for recipe_id in URL
 function getRecipeIdFromURL() {
     const params = new URLSearchParams(window.location.search);
     return params.get("recipe_id");
 }
 
-// Prefill the form for update/copy mode
 async function loadRecipeForEditing() {
     const recipeId = getRecipeIdFromURL();
-    if (!recipeId) return; // Normal add mode → do nothing
+    if (!recipeId) return;
 
     try {
         const response = await fetch(`/get_recipe/${recipeId}`);
         if (!response.ok) throw new Error("Recipe not found");
-        
+
         const data = await response.json();
         const recipe = data.recipe;
 
-        // Prefill everything
         document.getElementById('name').value = recipe.name || "";
         document.getElementById('ingredients').value = recipe.ingredients || "";
         document.getElementById('prep_time').value = recipe.prep_time || "";
@@ -465,19 +506,65 @@ async function loadRecipeForEditing() {
         document.getElementById('category').value = recipe.category || "Uncategorized";
         document.getElementById('instructions').value = recipe.instructions || "";
 
-        // Change form title + button to "Copy/Update"
         document.querySelector("#recipeForm h2").textContent = "Copy or Update Recipe";
         document.querySelector("#recipeForm input[type='submit']").value = "Save Copy";
 
-    } catch (err) {
-        console.error("Error loading recipe:", err);
-    }
+    } catch (err) { console.error("Error loading recipe:", err); }
 }
 
-// Run after login check completes
-setTimeout(() => {
-    loadRecipeForEditing();
-}, 300);
+setTimeout(() => loadRecipeForEditing(), 300);
+
+/* ________________________________ AJAX Form Handler (NEW) ________________________________ */
+document.getElementById("addRecipeForm").addEventListener("submit", async function(e) {
+    e.preventDefault(); // Stop normal form submission
+
+    const formData = new FormData(this);
+
+    try {
+        const response = await fetch("/add_recipe", {
+            method: "POST",
+            body: formData
+        });
+
+        // Try parsing JSON even if response.ok is false
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (jsonErr) {
+            console.error("Failed to parse JSON:", jsonErr);
+        }
+
+        // Handle based on backend response
+        if (data.error) {
+            // Show backend error
+            document.getElementById("errorMessage").innerText = data.error;
+            document.getElementById("errorPopup").style.display = "flex";
+        } else if (data.recipe_id) {
+            // Optional: show success popup first
+            alert("Recipe saved successfully! Redirecting to recipe page...");
+            window.location.href = `/view_recipe?recipe_id=${data.recipe_id}`;
+        } else {
+            // Unknown response
+            document.getElementById("errorMessage").innerText = "Unexpected server response.";
+            document.getElementById("errorPopup").style.display = "flex";
+        }
+
+    } catch (err) {
+        console.error("Submit failed:", err);
+        document.getElementById("errorMessage").innerText =
+            "Something went wrong. Please try again.";
+        document.getElementById("errorPopup").style.display = "flex";
+    }
+});
+
+/* Close error popup when clicking outside content */
+document.getElementById("errorPopup").addEventListener("click", function(e) {
+    if (e.target === this) {
+        this.style.display = "none";
+    }
+});
+/* ________________________________ AJAX Form Handler (NEW) ________________________________ */
+
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 

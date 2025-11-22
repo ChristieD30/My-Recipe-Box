@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app import db
@@ -6,21 +6,25 @@ from app import db
 class Recipe(db.Model):
     __tablename__ = 'recipes'
     id = Column(Integer, primary_key=True)
-    name = Column(String(50), unique=True)
+    name = Column(String(50))  # remove unique=True
     ingredients = Column(String(500), nullable=False)
-    instructions = Column(String(1000), nullable=False)  # Changed to nullable=False since it's required
-    category = Column(String(50), nullable=True)  # New category field
+    instructions = Column(String(1000), nullable=False)
+    category = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Fixed - removed extra comma
-    image_location = Column(String(255), nullable=True) 
-    prep_time = Column(Integer, nullable=True)  # in minutes
-    cook_time = Column(Integer, nullable=True)  # in minutes
-    total_time = Column(Integer, nullable=True)  # in minutes
-    servings = Column(Integer, nullable=True)  # number of servings
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    image_location = Column(String(255), nullable=True)
+    prep_time = Column(Integer, nullable=True)
+    cook_time = Column(Integer, nullable=True)
+    total_time = Column(Integer, nullable=True)
+    servings = Column(Integer, nullable=True)
     
     user = relationship('User', back_populates='recipes')
     favorites = relationship('Favorite', back_populates='recipe', cascade='all, delete-orphan')
+
+    __table_args__ = (
+        UniqueConstraint('name', 'user_id', name='uix_user_recipe_name'),
+    )
     
     def __init__(self, *, name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, image_location=None):
         self.name = name

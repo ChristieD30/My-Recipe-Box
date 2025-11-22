@@ -10,6 +10,11 @@ from pathlib import Path
 # Initialize extensions
 db = SQLAlchemy()
 
+# Import services at the top to avoid repeated imports inside routes
+from app.service.recipe import RecipeService
+from app.service.user import UserService
+from app.service.favorites import FavoriteService
+
 def create_app():
     app = Flask(__name__)
     
@@ -62,25 +67,23 @@ def create_app():
     def login_form():
         return render_template('login.html')
     
-    
     @app.route('/add_recipe', methods=['POST'])
     def create_recipe():
         # Check if user is logged in
         auth_check = require_login()
         if auth_check:
             return auth_check
-        # Parse data based on content type
-        if request.content_type == 'application/json':
+
+        # Parse incoming data
+        if request.is_json:
             data = request.get_json()
-            image_location = None  # JSON requests don't include files
+            image_location = None  # JSON doesn't include files
         else:
             data = request.form
-            # Handle image upload using service
             image_location = None
             if 'recipe_image' in request.files:
                 file = request.files['recipe_image']
-                if file and file.filename:  # Check if file was actually uploaded
-                    from app.service.recipe import RecipeService
+                if file and file.filename:  
                     try:
                         image_location = RecipeService.save_recipe_image(file)
                     except Exception as e:
@@ -88,15 +91,13 @@ def create_app():
 
         name = data.get('name')
         ingredients = data.get('ingredients')
-        category = data.get('category', 'Uncategorized')  # Default category if not provided
+        category = data.get('category', 'Uncategorized')
         instructions = data.get('instructions', '')
-        
-        # Use the logged-in user's ID
+
         user_id = session['user_id']
 
-        from app.service.recipe import RecipeService
         try:
-            # Call the RecipeService to add the recipe
+            # Add recipe using Option A (unique per user)
             recipe, message = RecipeService.add_recipe(
                 name=name,
                 ingredients=ingredients,
@@ -105,13 +106,34 @@ def create_app():
                 user_id=user_id,
                 image_location=image_location
             )
-            if recipe is None:
-                return jsonify({'error': message}), 400
 
-            return redirect(f"/show_recipe?recipe_id={recipe.id}")
-        
+            if recipe is None:
+                # Name already exists for this user
+                # Properly return JSON error for both AJAX and normal form
+                if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                    return jsonify({'error': message}), 400
+                else:
+                    return render_template('add_recipes.html', error_message=message)
+
+            # Recipe added successfully
+            if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                # Return JSON success
+                return jsonify({
+                    'success': True,
+                    'recipe_id': recipe.id,
+                    'message': 'Recipe saved successfully!'
+                }), 200
+            else:
+                # Standard form submission: redirect to the newly created recipe page
+                return redirect(f"/show_recipe?recipe_id={recipe.id}")
+
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Rollback and show proper error
+            db.session.rollback()
+            if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return jsonify({'error': f"Unexpected error: {str(e)}"}), 500
+            else:
+                return render_template('add_recipes.html', error_message=f"Unexpected error: {str(e)}")
 
     @app.route('/signup')
     def signup():
@@ -120,10 +142,9 @@ def create_app():
         except Exception as e:
             return f"Error: {str(e)}"
     
-
     @app.route('/add_user', methods=['POST'])
     def create_user():
-        if request.content_type == 'application/json':
+        if request.is_json:
             data = request.get_json()
         else:
             data = request.form
@@ -138,7 +159,6 @@ def create_app():
             error_msg = 'All fields (username, name, email, password) are required.'
             return jsonify({'error': error_msg}), 400
 
-        from app.service.user import UserService
         try:
             result = UserService.add_user(username, email, name, password)
             
@@ -160,9 +180,6 @@ def create_app():
 
     @app.route('/search', methods=['GET','POST'])
     def search_recipes():
-        from app.service.recipe import RecipeService
-        from app.service.favorites import FavoriteService
-        from app.model.favorites import Favorite
         q = request.args.get('q', '')
         page = request.args.get('page', 1, type=int)
         per_page = 1
@@ -235,7 +252,7 @@ def create_app():
 
     @app.route('/login', methods=['POST'])
     def login():
-        if request.content_type == 'application/json':
+        if request.is_json:
             data = request.get_json()
         else:
             data = request.form
@@ -246,7 +263,6 @@ def create_app():
         if not username or not password:
             return jsonify({'error': 'Username and password are required to login.'}), 400
 
-        from app.service.user import UserService
         user = UserService.authenticate(username, password)
 
         if user:
@@ -294,8 +310,6 @@ def create_app():
         
     @app.route('/random_recipe', methods=['GET'])
     def get_random_recipe():
-        from app.service.recipe import RecipeService
-
         recipe, message = RecipeService.get_random_recipe()
         if recipe:
             return jsonify({
@@ -317,14 +331,11 @@ def create_app():
         # Add CSS to remove border around Updated text box (maybe just replace with another label?)
         # Add another button to return to home page
         # General CSS formatting, including making the Name text box wider
-        from app.service.recipe import RecipeService # could we put this at the top instead of separately in each procedure ?
         page = request.args.get("page", 1, type=int)
         per_page = 1
         paginated_recipes = Recipe.query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
         recipe = paginated_recipes.items[0] if paginated_recipes.items else None
 
-
-        
         if request.method == "POST":
             message = None
             message_type = None
@@ -371,7 +382,6 @@ def create_app():
             recipe = paginated_recipes.items[0] if paginated_recipes.items else None
             return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes, message=message, message_type=message_type)
 
-
         return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes)
     
     @app.route('/about')
@@ -411,12 +421,8 @@ def create_app():
 
     @app.route('/featured')
     def featured():
-        from app.model.recipes import Recipe
-        from app import db
-
         # Get a random recipe from the database
         recipe = Recipe.query.order_by(db.func.random()).first()
-
         return render_template('featured.html', recipe=recipe)
 
     @app.route('/is_favorite/<int:recipe_id>', methods=['GET'])
@@ -425,7 +431,6 @@ def create_app():
             return jsonify({'is_favorite': False}), 200
 
         user_id = session['user_id']
-        from app.service.favorites import FavoriteService
         is_fav = FavoriteService.is_favorite(recipe_id, user_id)
         return jsonify({'is_favorite': is_fav}), 200
     
@@ -437,7 +442,6 @@ def create_app():
         recipe_id = request.form.get('recipe_id') or request.json.get('recipe_id')
         user_id = session['user_id']
 
-        from app.service.favorites import FavoriteService
         FavoriteService.remove_favorite(recipe_id, user_id)
     
         return jsonify({'message': 'Favorite removed', 'recipe_id': recipe_id}), 200
@@ -450,7 +454,6 @@ def create_app():
         recipe_id = request.form.get('recipe_id') or request.json.get('recipe_id')
         user_id = session['user_id']
 
-        from app.service.favorites import FavoriteService
         try:
             favorite = FavoriteService.add_favorite(recipe_id, user_id)
             return jsonify({'message': 'Favorite added', 'recipe_id': recipe_id}), 200
@@ -459,14 +462,11 @@ def create_app():
 
     @app.route('/all_recipe_ids', methods=['GET'])
     def get_all_recipe_ids():
-        from app.service.recipe import Recipe
         ids = [r.id for r in Recipe.query.all()]
         return jsonify({'recipe_ids': ids}), 200
     
     @app.route('/get_recipe_by_id/<int:recipe_id>', methods=['GET'])
     def get_recipe_by_id(recipe_id):
-#        from app.models import Recipe
-        from app.service.recipe import Recipe
         recipe = Recipe.query.get(recipe_id)
         if recipe:
             return jsonify({
@@ -488,11 +488,6 @@ def create_app():
             return jsonify({'error': 'Login required'}), 401
 
         user_id = session['user_id']
-
-        from app.service.favorites import FavoriteService
-        from app.model.recipes import Recipe
-
-        # Get all favorites for this user
         favorites = FavoriteService.get_user_favorites(user_id)
         recipe_list = []
 
@@ -510,7 +505,6 @@ def create_app():
     
     @app.route('/browse_recipes_list', methods=['GET'])
     def browse_recipes_list():
-        from app.model.recipes import Recipe
         category = request.args.get('category', None)
 
         query = Recipe.query
@@ -518,128 +512,29 @@ def create_app():
             query = query.filter(Recipe.category.ilike(category))
 
         recipes = query.all()
+        recipe_list = []
 
-        return jsonify({'recipes': [
-            {
-                'recipe_id': r.id,
-                'name': r.name,
-                'image': getattr(r, 'image', None),
-                'prep_time': getattr(r, 'prep_time', None),
-                'cook_time': getattr(r, 'cook_time', None),
-                'total_time': getattr(r, 'total_time', None),
-                'servings': getattr(r, 'servings', None),
-                'category': getattr(r, 'category', 'Uncategorized')
-            } for r in recipes
-        ]}), 200
+        for recipe in recipes:
+            recipe_list.append({
+                'recipe_id': recipe.id,
+                'name': recipe.name,
+                'category': recipe.category,
+                'ingredients': recipe.ingredients,
+                'instructions': recipe.instructions,
+                'user_id': recipe.user_id,
+                'image': getattr(recipe, 'image', None)  # Safely handle missing image field
+            })
 
-    @app.route('/search_results', methods=['GET'])
-    def search_results_json():
-        from app.model.recipes import Recipe
+        return jsonify({'recipes': recipe_list}), 200
 
-        query = request.args.get('q', '').strip().lower()
-        if not query:
-            return jsonify({'recipes': []})
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('404.html'), 404
 
-        # Match recipes by name, category, or ingredients
-        recipes = Recipe.query.filter(
-            db.or_(
-                Recipe.name.ilike(f"%{query}%"),
-                Recipe.category.ilike(f"%{query}%"),
-                Recipe.ingredients.ilike(f"%{query}%")
-            )
-        ).all()
-
-        return jsonify({
-            'recipes': [
-                {
-                    'recipe_id': r.id,
-                    'name': r.name,
-                    'image': getattr(r, 'image', None),
-                    'prep_time': getattr(r, 'prep_time', None),
-                    'cook_time': getattr(r, 'cook_time', None),
-                    'total_time': getattr(r, 'total_time', None),
-                    'servings': getattr(r, 'servings', None),
-                    'category': getattr(r, 'category', None),
-                    'ingredients': getattr(r, 'ingredients', None),
-                    'instructions': getattr(r, 'instructions', None),
-                    'created_by': r.user.username if r.user else None
-                } for r in recipes
-            ]
-        })
-    
-    @app.route('/show_recipe')
-    def show_recipe():
-        return render_template('show_recipe.html')
-    
-    @app.route('/get_recipe/<int:recipe_id>', methods=['GET'])
-    def get_recipe(recipe_id):
-        from app.model.recipes import Recipe
-        recipe = Recipe.query.get(recipe_id)
-        if recipe:
-            return jsonify({
-                'recipe': {
-                    'recipe_id': recipe.id,
-                    'name': recipe.name,
-                    'ingredients': recipe.ingredients,
-                    'instructions': recipe.instructions,
-                    'user_id': recipe.user_id
-                }
-            }), 200
-        else:
-            return jsonify({'error': 'Recipe not found'}), 404
-        
-    @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
-    def update_recipe(recipe_id):
-        from app.service.recipe import RecipeService
-
-        auth_check = require_login()
-        if auth_check:
-            return auth_check
-
-        data = request.form
-
-        name = data.get("name")
-        ingredients = data.get("ingredients")
-        instructions = data.get("instructions")
-        category = data.get("category")
-        user_id = session['user_id']
-
-        # Determine if user owns this recipe
-        recipe = Recipe.query.get(recipe_id)
-
-        if not recipe:
-            return jsonify({'error': 'Recipe not found'}), 404
-
-        if recipe.user_id == user_id:
-            # Owner update
-            updated, msg = RecipeService.owner_update_recipe(
-                recipe_id=recipe_id,
-                name=name,
-                ingredients=ingredients,
-                instructions=instructions,
-                category=category,
-                user_id=user_id
-            )
-            if not updated:
-                return jsonify({'error': msg}), 400
-
-            return redirect(f"/show_recipe?recipe_id={recipe_id}")
-
-        else:
-            # Fork update
-            forked, msg = RecipeService.update_recipe_as_duplicate(
-                _id=recipe_id,
-                _name=name,
-                _ingredients=ingredients,
-                _instructions=instructions,
-                _category=category,
-                user_id=user_id,
-                user_full_name=session.get('name')
-            )
-            if not forked:
-                return jsonify({'error': msg}), 400
-
-            return redirect(f"/show_recipe?recipe_id={forked.id}")
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()  # Rollback in case of DB errors
+        return render_template('500.html', error=error), 500
 
     return app
-
