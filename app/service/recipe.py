@@ -85,26 +85,26 @@ class RecipeService:
     @staticmethod
     def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, _category=None, user_full_name=None, _image_location=None):
         try:
-            # Fetch the original recipe to duplicate
+            # Fetch original recipe
             original = Recipe.query.filter_by(id=_id).first()
             if not original:
                 return None, "Unable to duplicate recipe."
 
-            # Keep the original recipe name for the forked recipe
+            # Duplicate fields
             name = original.name
             category = _category or original.category
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
             image_location = _image_location or original.image_location
 
-            # Check if the recipe with this name already exists for the user
+            # Prevent duplicate name for same user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
             if existing:
                 return None, "Recipe name already exists. Please choose a different name."
 
-            # Create the new duplicated recipe
+            # Create new duplicated recipe
             new_recipe = Recipe(
-                name=name,  # Keep the original name
+                name=name,
                 ingredients=ingredients,
                 instructions=instructions,
                 user_id=user_id,
@@ -117,7 +117,10 @@ class RecipeService:
             )
 
             db.session.add(new_recipe)
-            db.session.commit()  # Commit the new recipe first to get the ID
+            db.session.commit()
+
+            # IMPORTANT FIX: refresh so SQLAlchemy loads new_recipe.user
+            db.session.refresh(new_recipe)
 
             message = f"Your updated recipe '{name}' has been created as a duplicate."
             return new_recipe, message

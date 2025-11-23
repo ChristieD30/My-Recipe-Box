@@ -600,21 +600,17 @@ def create_app():
     @app.route('/get_recipe/<int:recipe_id>', methods=['GET'])
     def get_recipe(recipe_id):
         from app.model.recipes import Recipe
-        from app.model.users import User  # import the correct model class
+        from app.model.users import User
 
         recipe = Recipe.query.get(recipe_id)
         if not recipe:
             return jsonify({'error': 'Recipe not found'}), 404
 
-        # Always try to fetch the owner by user_id (works even if relationship isn't set)
-        owner_username = None
-        try:
-            if recipe.user_id:
-                user = User.query.get(recipe.user_id)
-                owner_username = user.username if user else None
-        except Exception:
-            # defensive: if something odd happens, don't crash — leave owner_username as None
-            owner_username = None
+        owner_username = "Anonymous"
+        if recipe.user_id:
+            user = User.query.get(recipe.user_id)
+            if user:
+                owner_username = user.username
 
         return jsonify({
             'recipe': {
@@ -622,13 +618,13 @@ def create_app():
                 'name': recipe.name,
                 'ingredients': recipe.ingredients,
                 'instructions': recipe.instructions,
-                'category': getattr(recipe, 'category', None),
+                'category': getattr(recipe, 'category', 'Uncategorized'),
                 'prep_time': getattr(recipe, 'prep_time', None),
                 'cook_time': getattr(recipe, 'cook_time', None),
                 'total_time': getattr(recipe, 'total_time', None),
                 'servings': getattr(recipe, 'servings', None),
                 'user_id': recipe.user_id,
-                'owner': owner_username  # will be None if not found
+                'owner': owner_username
             }
         }), 200
         
