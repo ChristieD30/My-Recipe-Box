@@ -306,7 +306,8 @@ def create_app():
                     'name': recipe.name,
                     'ingredients': recipe.ingredients,
                     'instructions': recipe.instructions,
-                    'user_id': recipe.user_id
+                    'user_id': recipe.user_id,
+                    'owner': User.query.get(recipe.user_id).username if recipe.user_id and User.query.get(recipe.user_id) else "Anonymous"
                 }
             }), 200
         else:

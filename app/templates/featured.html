@@ -367,7 +367,6 @@ footer {
         width: 150px; 
     }
 }
-/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 </style>
 </head>
 
@@ -407,9 +406,11 @@ footer {
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
     <h1 id="featuredTitle">Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!</h1>
+
     <div class="featured-container" id="featuredRecipe">
         <p>Loading featured recipe...</p>
     </div>
+
     <button class="refresh-btn" onclick="loadFeaturedRecipe()">Show Another Recipe</button>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
@@ -434,7 +435,16 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
-// Check login status
+function escapeHtml(str) {
+    if (!str && str !== 0) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 async function checkLoginStatus() {
     try {
         const res = await fetch('/current_user');
@@ -447,70 +457,85 @@ async function checkLoginStatus() {
 }
 
 // Load a random featured recipe
-function loadFeaturedRecipe() {
-    fetch('/random_recipe')
-        .then(r => r.json())
-        .then(async data => {
-            const container = document.getElementById('featuredRecipe');
-            const title = document.getElementById('featuredTitle');
+async function loadFeaturedRecipe() {
+    const container = document.getElementById('featuredRecipe');
+    const title = document.getElementById('featuredTitle');
 
-            if (data.recipe) {
-                const recipe = data.recipe;
+    try {
+        const response = await fetch('/random_recipe');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
 
-                // Keep the featured title
-                title.innerHTML = "Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!";
+        if (!data.recipe) {
+            title.textContent = "Oops!";
+            container.innerHTML = `<p style="color:red;">${data.error || 'No recipe found.'}</p>`;
+            return;
+        }
 
-                const instructionsWithNumbers =
-                    recipe.instructions.split('\n').map((step, i) =>
-                        `${i + 1}. ${step.replace(/^\d+\.\s*/, '')}`
-                    ).join('<br>');
+        const recipe = data.recipe;
+        const ingredients = (recipe.ingredients || '').split('\n').filter(Boolean);
 
-                container.innerHTML = ` 
-                    <h2>${recipe.name} <span class="favorite-star" id="favStar" title="Add to favorites">★</span></h2>
+        const instructions = (recipe.instructions || '')
+            .split('\n')
+            .map(step => step.replace(/^\s*\d+[\.\)]\s*/, '').trim())
+            .filter(s => s.length > 0)
+            .map((step, i) => `${i + 1}. ${escapeHtml(step)}`)
+            .join('<br>');
 
-                    <!-- UPDATED LINK (matches recipe_details.html) -->
-                    <a class="update-link" href="/add_recipes?recipe_id=${recipe.recipe_id}">
-                        Update/Copy Recipe
-                    </a>
+        title.innerHTML = "Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!";
 
-                    ${recipe.image ? `<div class="recipe-image" style="background-image:url('${recipe.image}')"></div>` : `<div class="recipe-image">No Image Available</div>`}
-                    <div class="recipe-meta">
-                        <span class="bold-label">Prep Time:</span> ${recipe.prep_time || 'N/A'} | 
-                        <span class="bold-label">Cook Time:</span> ${recipe.cook_time || 'N/A'} | 
-                        <span class="bold-label">Total Time:</span> ${recipe.total_time || 'N/A'} | 
-                        <span class="bold-label">Servings:</span> ${recipe.servings || 'N/A'}
-                    </div>
-                    <div class="recipe-ingredients">
-                        <hr><strong>Ingredients:</strong>
-                        <ul>${recipe.ingredients.split('\n').map(ing => `<li>${ing}</li>`).join('')}</ul>
-                    </div>
-                    <p><strong>Instructions:</strong><br>${instructionsWithNumbers}</p>
-                `;
+        container.innerHTML = `
+            <h2>${escapeHtml(recipe.name || 'Untitled')}
+                <span style="font-weight: normal; font-size: 0.6em; color:#555;">
+                    ${recipe.owner ? `(by ${escapeHtml(recipe.owner)})` : ""}
+                </span>
+                <span class="favorite-star" id="favStar" title="Add to favorites">★</span>
+            </h2>
 
-                const star = document.getElementById('favStar');
-                star.addEventListener('click', () => toggleFavorite(recipe.recipe_id));
+            <a class="update-link" href="/add_recipes?recipe_id=${recipe.recipe_id}">
+                Update/Copy Recipe
+            </a>
 
-                // Check favorite status if logged in
-                if (document.body.dataset.loggedIn === "true") {
-                    try {
-                        const favRes = await fetch(`/is_favorite/${recipe.recipe_id}`);
-                        const favData = await favRes.json();
-                        if (favData.is_favorite) {
-                            star.classList.add('favorited');
-                        }
-                    } catch (err) {
-                        console.error('Error checking favorite status:', err);
-                    }
-                }
-            } else {
-                title.textContent = "Oops!";
-                container.innerHTML = `<p style="color:red;">${data.error || 'No recipe found.'}</p>`;
+            ${recipe.image
+                ? `<div class="recipe-image" style="background-image:url('${recipe.image}')"></div>`
+                : `<div class="recipe-image">No Image Available</div>`
             }
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('featuredRecipe').innerHTML = `<p style="color:red;">Error loading recipe.</p>`;
-        });
+
+            <div class="recipe-meta">
+                <span class="bold-label">Prep Time:</span> ${recipe.prep_time || 'N/A'} | 
+                <span class="bold-label">Cook Time:</span> ${recipe.cook_time || 'N/A'} | 
+                <span class="bold-label">Total Time:</span> ${recipe.total_time || 'N/A'} | 
+                <span class="bold-label">Servings:</span> ${recipe.servings || 'N/A'}
+            </div>
+
+            <div class="recipe-ingredients">
+                <hr><strong>Ingredients:</strong>
+                <ul>${ingredients.map(ing => `<li>${escapeHtml(ing)}</li>`).join('')}</ul>
+            </div>
+
+            <p><strong>Instructions:</strong><br>${instructions}</p>
+        `;
+
+        // Favorite star behavior
+        const star = document.getElementById('favStar');
+        if (star) {
+            star.addEventListener('click', () => toggleFavorite(recipe.recipe_id));
+        }
+
+        if (document.body.dataset.loggedIn === "true") {
+            try {
+                const favRes = await fetch(`/is_favorite/${recipe.recipe_id}`);
+                const favData = await favRes.json();
+                if (favData.is_favorite && star) star.classList.add('favorited');
+            } catch (err) {
+                console.error('Error checking favorite status:', err);
+            }
+        }
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style="color:red;">Error loading recipe.</p>`;
+    }
 }
 
 // Toggle favorite
@@ -523,8 +548,9 @@ function toggleFavorite(recipeId) {
         return;
     }
 
-    star.classList.toggle('favorited');
-    const isFavorited = star.classList.contains('favorited');
+    if (!star) return;
+
+    const isFavorited = star.classList.toggle('favorited');
     const url = isFavorited ? '/add_favorite' : '/remove_favorite';
 
     fetch(url, {
