@@ -603,6 +603,8 @@ def create_app():
     @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
     def update_recipe(recipe_id):
         from app.service.recipe import RecipeService
+        from app import db
+        from datetime import datetime
 
         auth_check = require_login()
         if auth_check:
@@ -623,19 +625,15 @@ def create_app():
             return jsonify({'error': 'Recipe not found'}), 404
 
         if recipe.user_id == user_id:
-            # Owner update
-            updated, msg = RecipeService.owner_update_recipe(
-                recipe_id=recipe_id,
-                name=name,
-                ingredients=ingredients,
-                instructions=instructions,
-                category=category,
-                user_id=user_id
-            )
-            if not updated:
-                return jsonify({'error': msg}), 400
+            # Owner update → direct SQLAlchemy update
+            recipe.name = name
+            recipe.ingredients = ingredients
+            recipe.instructions = instructions
+            recipe.category = category
+            recipe.updated_at = datetime.now()
+            db.session.commit()
 
-            return redirect(f"/show_recipe?recipe_id={recipe_id}")
+            return jsonify({'success': True, 'recipe_id': recipe.id}), 200
 
         else:
             # Fork update
@@ -651,6 +649,6 @@ def create_app():
             if not forked:
                 return jsonify({'error': msg}), 400
 
-            return redirect(f"/show_recipe?recipe_id={forked.id}")
+            return jsonify({'success': True, 'recipe_id': forked.id}), 200
 
     return app
