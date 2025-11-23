@@ -598,19 +598,37 @@ def create_app():
     @app.route('/get_recipe/<int:recipe_id>', methods=['GET'])
     def get_recipe(recipe_id):
         from app.model.recipes import Recipe
+        from app.model.users import User  # import the correct model class
+
         recipe = Recipe.query.get(recipe_id)
-        if recipe:
-            return jsonify({
-                'recipe': {
-                    'recipe_id': recipe.id,
-                    'name': recipe.name,
-                    'ingredients': recipe.ingredients,
-                    'instructions': recipe.instructions,
-                    'user_id': recipe.user_id
-                }
-            }), 200
-        else:
+        if not recipe:
             return jsonify({'error': 'Recipe not found'}), 404
+
+        # Always try to fetch the owner by user_id (works even if relationship isn't set)
+        owner_username = None
+        try:
+            if recipe.user_id:
+                user = User.query.get(recipe.user_id)
+                owner_username = user.username if user else None
+        except Exception:
+            # defensive: if something odd happens, don't crash — leave owner_username as None
+            owner_username = None
+
+        return jsonify({
+            'recipe': {
+                'recipe_id': recipe.id,
+                'name': recipe.name,
+                'ingredients': recipe.ingredients,
+                'instructions': recipe.instructions,
+                'category': getattr(recipe, 'category', None),
+                'prep_time': getattr(recipe, 'prep_time', None),
+                'cook_time': getattr(recipe, 'cook_time', None),
+                'total_time': getattr(recipe, 'total_time', None),
+                'servings': getattr(recipe, 'servings', None),
+                'user_id': recipe.user_id,
+                'owner': owner_username  # will be None if not found
+            }
+        }), 200
         
     @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
     def update_recipe(recipe_id):

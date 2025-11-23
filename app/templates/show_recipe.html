@@ -502,7 +502,10 @@ async function loadRecipe() {
             .join('<br>');
 
         container.innerHTML = `
-            <h2>${recipe.name} 
+            <h2>${recipe.name}
+                <span style="font-weight: normal; font-size: 0.6em; color:#555;">
+                    ${recipe.owner ? `(by ${recipe.owner})` : ""}
+                </span>
                 <span class="favorite-star" id="favStar" title="Add to favorites">★</span>
             </h2>
 
