@@ -69,17 +69,16 @@ def create_app():
         auth_check = require_login()
         if auth_check:
             return auth_check
-        # Parse data based on content type
+
         if request.content_type == 'application/json':
             data = request.get_json()
-            image_location = None  # JSON requests don't include files
+            image_location = None
         else:
             data = request.form
-            # Handle image upload using service
             image_location = None
             if 'recipe_image' in request.files:
                 file = request.files['recipe_image']
-                if file and file.filename:  # Check if file was actually uploaded
+                if file and file.filename:
                     from app.service.recipe import RecipeService
                     try:
                         image_location = RecipeService.save_recipe_image(file)
@@ -88,15 +87,12 @@ def create_app():
 
         name = data.get('name')
         ingredients = data.get('ingredients')
-        category = data.get('category', 'Uncategorized')  # Default category if not provided
+        category = data.get('category', 'Uncategorized')
         instructions = data.get('instructions', '')
-        
-        # Use the logged-in user's ID
         user_id = session['user_id']
 
         from app.service.recipe import RecipeService
         try:
-            # Call the RecipeService to add the recipe
             recipe, message = RecipeService.add_recipe(
                 name=name,
                 ingredients=ingredients,
@@ -108,11 +104,13 @@ def create_app():
             if recipe is None:
                 return jsonify({'error': message}), 400
 
+            # Return JSON instead of redirect
             return jsonify({
-                "success": True,
-                "recipe_id": recipe.id
-            })
-        
+                'success': True,
+                'recipe_id': recipe.id,
+                'message': 'Recipe added successfully!'
+            }), 200
+
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
@@ -656,4 +654,3 @@ def create_app():
             return redirect(f"/show_recipe?recipe_id={forked.id}")
 
     return app
-
