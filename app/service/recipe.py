@@ -90,7 +90,8 @@ class RecipeService:
             if not original:
                 return None, "Unable to duplicate recipe."
 
-            name = f"{_name or original.name} ({user_full_name} Copy)"
+            # Keep the original recipe name for the forked recipe
+            name = original.name
             category = _category or original.category
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
@@ -103,7 +104,7 @@ class RecipeService:
 
             # Create the new duplicated recipe
             new_recipe = Recipe(
-                name=name,
+                name=name,  # Keep the original name
                 ingredients=ingredients,
                 instructions=instructions,
                 user_id=user_id,

@@ -370,14 +370,13 @@ footer {
 
     <!-- Recipe submission -->
     <div id="recipeForm">
-        <h2>Add a New Recipe</h2>
+        <h2 id="recipeFormTitle">Add a New Recipe</h2>
         <form method="POST" action="/add_recipe" enctype="multipart/form-data">
-            <!-- Hidden input to detect update mode -->
             <input type="hidden" name="recipe_id" id="recipe_id" value="">
 
             <div>
                 <label for="name">Recipe Name:</label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" name="name" required readonly> <!-- make it readonly -->
             </div>
             <div>
                 <label for="ingredients">Ingredients:</label>
@@ -521,8 +520,20 @@ async function loadRecipeForEditing() {
         // Set hidden field for update
         document.getElementById('recipe_id').value = recipeId;
 
-        // Change form title + button to "Copy/Update"
-        document.querySelector("#recipeForm h2").textContent = "Copy or Update Recipe";
+        // Change form title to use username instead of full name
+        fetch('/current_user')
+            .then(r => r.json())
+            .then(userData => {
+                if(userData.logged_in) {
+                    document.getElementById("recipeFormTitle").textContent =
+                        `"${recipe.name}" (by ${userData.username})`;
+                }
+            });
+
+        // Make the recipe name read-only
+        document.getElementById('name').readOnly = true;
+
+        // Change submit button to "Save Copy" (optional)
         document.querySelector("#recipeForm input[type='submit']").value = "Save Copy";
 
     } catch (err) {
