@@ -338,8 +338,8 @@ def create_app():
                     _ingredients=request.form["ingredients"],
                     _instructions=request.form["instructions"],
                     _category=request.form["category"],
-                    user_id=session.get('user_id'),  # Use logged-in user's ID
-                    user_full_name=session.get('name')  # Use logged-in user's name
+                    user_id=session.get('user_id'),
+                    user_full_name=session.get('username') 
                 )
                 
                 if fork_result[0]:  # Success
@@ -368,9 +368,18 @@ def create_app():
                     message_type = "error"
             
             # Re-fetch updated recipe data for display
-            paginated_recipes = Recipe.query.order_by(Recipe.id).paginate(page=page, per_page=per_page)
-            recipe = paginated_recipes.items[0] if paginated_recipes.items else None
-            return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes, message=message, message_type=message_type)
+            if fork_result[0]:  # Success
+                recipe = fork_result[0]  # use the new forked recipe
+                message = f"Recipe forked! Your version '{recipe.name}' has been saved to your collection."
+                message_type = "success"
+
+            return render_template(
+                'display_recipes.html',
+                recipe=recipe,
+                paginated_recipes=paginated_recipes,
+                message=message,
+                message_type=message_type
+            )
 
 
         return render_template('display_recipes.html', recipe=recipe, paginated_recipes=paginated_recipes)
@@ -581,7 +590,10 @@ def create_app():
         if not recipe:
             return f"Recipe {recipe_id} not found", 404
 
-        return render_template('show_recipe.html', recipe=recipe)
+        # Use username instead of full name
+        username = recipe.user.username if recipe.user else "Unknown"
+
+        return render_template('show_recipe.html', recipe=recipe, username=username)
     
     @app.route('/get_recipe/<int:recipe_id>', methods=['GET'])
     def get_recipe(recipe_id):
@@ -644,7 +656,7 @@ def create_app():
                 _instructions=instructions,
                 _category=category,
                 user_id=user_id,
-                user_full_name=session.get('name')
+                user_full_name=session.get('username') 
             )
             if not forked:
                 return jsonify({'error': msg}), 400
