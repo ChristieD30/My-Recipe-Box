@@ -315,6 +315,13 @@ h1 {
     display: block;
     margin: 15px auto;
 }
+.recipe-name .recipe-owner {
+    font-size: 0.6em;      
+    color: #555;           
+    font-weight: normal;
+    margin-left: 6px;      
+    white-space: normal;   
+}
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
 
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
@@ -558,16 +565,22 @@ async function loadAllRecipes(category = "All") {
 
             const card = document.createElement('div');
             card.classList.add('recipe-card');
+            const creator = recipe.owner || "Anonymous";
             card.innerHTML = `
                 <div class="image-container">
                     ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.name}" style="width:100%; height:100%; object-fit:cover;">`
-                                   : `<div class="placeholder-text">No image available</div>`}
+                                : `<div class="placeholder-text">No image available</div>`}
                     <div class="recipe-name">
                         ${recipe.name}
+                        ${creator ? `<span class="recipe-owner">(by ${creator})</span>` : ""}
+                        
                         <div class="no-click-zone"></div>
+
                         ${loggedIn
-                           ? `<span class="favorite-star" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" style="color:${isFavorite ? 'gold' : '#ccc'};"></span>`
-                           : `<span class="favorite-star" title="Login to favorite" style="color:#ccc;"></span>`}
+                            ? `<span class="favorite-star" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
+                                style="color:${isFavorite ? 'gold' : '#ccc'};"></span>`
+                            : `<span class="favorite-star" title="Login to favorite" style="color:#ccc;"></span>`
+                        }
                     </div>
                     <div class="recipe-info">
                         <div class="row">

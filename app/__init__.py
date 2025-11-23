@@ -538,7 +538,8 @@ def create_app():
                 'cook_time': getattr(r, 'cook_time', None),
                 'total_time': getattr(r, 'total_time', None),
                 'servings': getattr(r, 'servings', None),
-                'category': getattr(r, 'category', 'Uncategorized')
+                'category': getattr(r, 'category', 'Uncategorized'),
+                'owner': User.query.get(r.user_id).username if r.user_id and User.query.get(r.user_id) else "Anonymous"
             } for r in recipes
         ]}), 200
 
