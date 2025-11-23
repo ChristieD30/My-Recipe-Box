@@ -537,13 +537,13 @@ setTimeout(() => {
 
 // Intercept Add/Update Recipe form submission
 function attachSubmitHandler() {
-    const form = document.querySelector("#recipeForm form");
-    if (!form) {
-        console.error("Form not found when trying to attach submit handler.");
-        return;
-    }
+        const form = document.querySelector("#recipeForm form");
+        if (!form) {
+            console.error("Form not found when trying to attach submit handler.");
+            return;
+        }
 
-    form.addEventListener("submit", async function(event) {
+        form.addEventListener("submit", async function(event) {
         event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(form);
@@ -563,14 +563,17 @@ function attachSubmitHandler() {
 
             const result = await response.json();
 
-            if (result.error === "Recipe name already exists. Please rename it.") {
+            if (result.error && result.error.includes("already exists")) {
                 showNameExistsPopup();
                 return;
             }
 
             if (result.success && result.recipe_id) {
+                // Clear the hidden field so next add doesn't trigger duplicate name
+                if (recipeIdInput) recipeIdInput.value = '';
                 // Redirect to show_recipe page
                 window.location.href = `/show_recipe?recipe_id=${result.recipe_id}`;
+                return;
             } else if (result.error) {
                 alert(result.error);
             }
