@@ -354,7 +354,6 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
-<!-- Main content layout for homepage and recipe submission -->
 <main>
     <h1>Welcome to My Recipe Box!</h1>
 
@@ -373,6 +372,9 @@ footer {
     <div id="recipeForm">
         <h2>Add a New Recipe</h2>
         <form method="POST" action="/add_recipe" enctype="multipart/form-data">
+            <!-- Hidden input to detect update mode -->
+            <input type="hidden" name="recipe_id" id="recipe_id" value="">
+
             <div>
                 <label for="name">Recipe Name:</label>
                 <input type="text" id="name" name="name" required>
@@ -453,6 +455,7 @@ function showNameExistsPopup() {
 function closeNameExistsPopup() {
     document.getElementById('nameExistsPopup').style.display = 'none';
 }
+
 // Fetch current user info + update interface 
 fetch('/current_user')
     .then(response => response.json())
@@ -501,7 +504,7 @@ async function loadRecipeForEditing() {
     try {
         const response = await fetch(`/get_recipe/${recipeId}`);
         if (!response.ok) throw new Error("Recipe not found");
-        
+
         const data = await response.json();
         const recipe = data.recipe;
 
@@ -514,6 +517,9 @@ async function loadRecipeForEditing() {
         document.getElementById('servings').value = recipe.servings || "";
         document.getElementById('category').value = recipe.category || "Uncategorized";
         document.getElementById('instructions').value = recipe.instructions || "";
+
+        // Set hidden field for update
+        document.getElementById('recipe_id').value = recipeId;
 
         // Change form title + button to "Copy/Update"
         document.querySelector("#recipeForm h2").textContent = "Copy or Update Recipe";
@@ -538,27 +544,45 @@ function attachSubmitHandler() {
     }
 
     form.addEventListener("submit", async function(event) {
-        event.preventDefault(); // stop normal page reload
+        event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(form);
 
-        const response = await fetch("/add_recipe", {
-            method: "POST",
-            body: formData
-        });
-
-        const result = await response.json();
-
-        if (result.error === "Recipe name already exists. Please rename it.") {
-            showNameExistsPopup();
-            return;
+        // Determine endpoint: add or update
+        let endpoint = "/add_recipe";
+        const recipeIdInput = form.querySelector("input[name='recipe_id']");
+        if (recipeIdInput && recipeIdInput.value) {
+            endpoint = `/update_recipe/${recipeIdInput.value}`;
         }
 
-        if (result.success) {
-            window.location.href = `/show_recipe?recipe_id=${result.recipe_id}`;
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.error === "Recipe name already exists. Please rename it.") {
+                showNameExistsPopup();
+                return;
+            }
+
+            if (result.success && result.recipe_id) {
+                // Redirect to show_recipe page
+                window.location.href = `/show_recipe?recipe_id=${result.recipe_id}`;
+            } else if (result.error) {
+                alert(result.error);
+            }
+        } catch (err) {
+            console.error("Error submitting recipe:", err);
+            alert("An unexpected error occurred. Please try again.");
         }
     });
 }
+
+// Call this function on page load
+document.addEventListener("DOMContentLoaded", attachSubmitHandler);
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 
