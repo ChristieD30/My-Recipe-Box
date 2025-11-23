@@ -142,7 +142,6 @@ nav {
 /* ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ */
 
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
-/* Main section layout for the Featured */
 main {
     flex: 1;
     display: flex;
@@ -221,7 +220,6 @@ h1 {
     color: #333;
     margin-bottom: 15px;
 }
-
 .recipe-meta .bold-label {
     font-weight: bold;
 }
@@ -369,6 +367,7 @@ footer {
         width: 150px; 
     }
 }
+/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
 </style>
 </head>
 
@@ -407,7 +406,7 @@ footer {
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
-    <h1 id="featuredTitle">Fetching your kitchen adventure...</h1>
+    <h1 id="featuredTitle">Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!</h1>
     <div class="featured-container" id="featuredRecipe">
         <p>Loading featured recipe...</p>
     </div>
@@ -457,6 +456,8 @@ function loadFeaturedRecipe() {
 
             if (data.recipe) {
                 const recipe = data.recipe;
+
+                // Keep the featured title
                 title.innerHTML = "Hello there! Your random kitchen adventure awaits.<br>Try it before it vanishes!";
 
                 const instructionsWithNumbers =
@@ -523,7 +524,6 @@ function toggleFavorite(recipeId) {
     }
 
     star.classList.toggle('favorited');
-
     const isFavorited = star.classList.contains('favorited');
     const url = isFavorited ? '/add_favorite' : '/remove_favorite';
 
