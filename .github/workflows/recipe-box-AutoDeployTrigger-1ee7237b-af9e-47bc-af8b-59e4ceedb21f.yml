@@ -2,14 +2,10 @@ name: Trigger auto deployment for recipe-box
 
 # When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
   push:
-    branches: 
-      [ main ]
-    paths:
-    - '**'
-    - '.github/workflows/recipe-box-AutoDeployTrigger-1ee7237b-af9e-47bc-af8b-59e4ceedb21f.yml'
-
+    # Pattern matched against refs/tags
+    tags:        
+      - '*'      
   # Allow manual trigger 
   workflow_dispatch:      
 
@@ -45,5 +41,6 @@ jobs:
           imageToBuild: recipeboxregistry1763395149.azurecr.io/recipe-box:${{ github.sha }}
           _buildArgumentsKey_: |
             _buildArgumentsValues_
+
 
 
