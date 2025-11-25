@@ -514,7 +514,9 @@ async function loadRecipe() {
                 Update/Copy Recipe
             </a>
 
-            ${recipe.image ? `<div class="recipe-image" style="background-image:url('${recipe.image}')"></div>` : `<div class="recipe-image">No Image Available</div>`}
+            ${recipe.image_location ? 
+                `<div class="recipe-image" style="background-image:url('${recipe.image_location}')"></div>` 
+                : `<div class="recipe-image">No Image Available</div>`}
             <div class="recipe-meta">
                 <span class="bold-label">Prep Time:</span> ${recipe.prep_time || 'N/A'} | 
                 <span class="bold-label">Cook Time:</span> ${recipe.cook_time || 'N/A'} | 
