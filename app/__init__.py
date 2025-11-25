@@ -522,6 +522,7 @@ def create_app():
     @app.route('/browse_recipes_list', methods=['GET'])
     def browse_recipes_list():
         from app.model.recipes import Recipe
+        from app.model.users import User
         category = request.args.get('category', None)
 
         query = Recipe.query
@@ -534,7 +535,7 @@ def create_app():
             {
                 'recipe_id': r.id,
                 'name': r.name,
-                'image': getattr(r, 'image', None),
+                'image_location': getattr(r, 'image_location', None),
                 'prep_time': getattr(r, 'prep_time', None),
                 'cook_time': getattr(r, 'cook_time', None),
                 'total_time': getattr(r, 'total_time', None),
@@ -566,7 +567,7 @@ def create_app():
                 {
                     'recipe_id': r.id,
                     'name': r.name,
-                    'image': getattr(r, 'image', None),
+                    'image_location': getattr(r, 'image_location', None),
                     'prep_time': getattr(r, 'prep_time', None),
                     'cook_time': getattr(r, 'cook_time', None),
                     'total_time': getattr(r, 'total_time', None),
@@ -623,6 +624,7 @@ def create_app():
                 'cook_time': getattr(recipe, 'cook_time', None),
                 'total_time': getattr(recipe, 'total_time', None),
                 'servings': getattr(recipe, 'servings', None),
+                'image_location': getattr(recipe, 'image_location', None),
                 'user_id': recipe.user_id,
                 'owner': owner_username
             }

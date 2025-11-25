@@ -38,8 +38,6 @@ class Recipe(db.Model):
         return f'<Recipe {self.name!r}>'
 
     def to_dict(self):
-        # Include additional_info fields if available
-        info = self.additional_info
         return {
             'recipe_id': self.id,
             'name': self.name,
@@ -48,9 +46,9 @@ class Recipe(db.Model):
             'category': self.category,
             'user_id': self.user_id,
             'created_by': self.user.username if self.user else None,
-            'prep_time': info.prep_time if info else None,
-            'cook_time': info.cook_time if info else None,
-            'total_time': info.total_time if info else None,
-            'servings': info.servings if info else None,
+            'prep_time': self.prep_time,
+            'cook_time': self.cook_time,
+            'total_time': self.total_time,
+            'servings': self.servings,
             'image_location': self.image_location,
         }
