@@ -441,7 +441,7 @@ async function loadFavorites() {
 
             card.innerHTML = `
                 <div class="image-container">
-                    ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.name}" style="width:100%; height:100%; object-fit:cover;">`
+                    ${recipe.image_location ? `<img src="/static/uploads/recipes/${recipe.image_location}" alt="${recipe.name}" style="width:100%; height:100%; object-fit:cover;">`
                                    : `<div class="placeholder-text">No image available</div>`}
 
                     <div class="recipe-name">

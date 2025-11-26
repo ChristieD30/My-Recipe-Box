@@ -54,7 +54,7 @@
 
         {% if recipe.image_location %}
             <div class="recipe-image">
-                <img src="{{ url_for('static', filename=recipe.image_location) }}" 
+                <img src="{{ url_for('static', filename='uploads/recipes/' + recipe.image_location) }}" 
                     alt="{{ recipe.name }}" 
                     style="max-width: 300px; height: auto; border-radius: 4px;">
             </div>

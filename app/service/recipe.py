@@ -34,8 +34,9 @@ class RecipeService:
             file_path = os.path.join(upload_folder, filename)
             file.save(file_path)
             
-            # Return relative path for database storage
-            return f"uploads/recipes/{filename}"
+            # Return just the filename for database storage
+            # Template will construct full path
+            return filename
         return None
 
     @staticmethod
