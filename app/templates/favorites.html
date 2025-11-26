@@ -155,7 +155,7 @@ h1 {
     text-align: center;
 }
 
-/* Grid of favorited recipes */
+/* Grid of recipes (SAME as browse) */
 .favorites-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -195,21 +195,21 @@ h1 {
     padding: 0 10px;
 }
 
-/* Recipe name on top (responsive, centered, wraps without overlapping star) */
+/* Recipe name + creator (MATCH BROWSE EXACTLY) */
 .recipe-card .recipe-name {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     display: flex;
-    align-items: center;          /* vertical centering */
-    justify-content: center;      /* horizontal centering of text */
-    flex-wrap: wrap;              /* allow multi-line wrapping */
+    align-items: center;          
+    justify-content: center;      
+    flex-wrap: wrap;              
     font-weight: 700;
     font-size: 1.3em;
     color: #000;
     background: rgba(255,255,255,0.9);
-    padding: 10px 52px 10px 16px; /* slightly less right padding to balance */
+    padding: 10px 52px 10px 16px;
     text-align: center;
     box-sizing: border-box;
     line-height: 1.3;
@@ -218,11 +218,19 @@ h1 {
     overflow-wrap: anywhere;
 }
 
-/* ________________________________ Favorite Star (MATCH FEATURED STYLE, inside title right corner) ________________________________ */
+/* Owner text */
+.recipe-name .recipe-owner {
+    font-size: 0.6em;
+    color: #555;
+    font-weight: normal;
+    margin-left: 6px;
+}
+
+/* Favorite Star */
 .favorite-star {
     position: absolute;
-    right: 16px;                  
-    top: 50%;                     
+    right: 16px;
+    top: 50%;
     transform: translateY(-50%);
     font-size: 1.6em;
     color: gold;
@@ -239,21 +247,19 @@ h1 {
 .favorite-star::before {
     content: "★";
 }
-/* ________________________________ Favorite Star (MATCH FEATURED STYLE, inside title right corner) ________________________________ */
 
-/* ________________________________ No-click zone for right corner (prevents accidental opens) ________________________________ */
+/* Prevent accidental click */
 .no-click-zone {
     position: absolute;
     top: 0;
     right: 0;
-    width: 60px;  
+    width: 60px;
     height: 100%;
     z-index: 4;
     cursor: default;
 }
-/* ________________________________ No-click zone for right corner (prevents accidental opens) ________________________________ */
 
-/* Bottom info section */
+/* Bottom info (same as browse) */
 .recipe-card .recipe-info {
     position: absolute;
     bottom: 0;
@@ -268,7 +274,6 @@ h1 {
     text-align: center;
 }
 
-/* Two-row table for prep/cook and total/servings */
 .recipe-card .recipe-info .row {
     display: flex;
     justify-content: center; 
@@ -294,28 +299,6 @@ h1 {
     text-align: left;
     padding-left: 30px;
 }
-
-/* Hidden full recipe view */
-#recipeDetail {
-    display: none;
-    max-width: 700px;
-    width: 100%;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    padding: 25px 30px;
-}
-#recipeDetail h2 {
-    color: #ff6f61;
-    margin-top: 0;
-}
-#recipeDetail img {
-    width: 100%;
-    max-width: 500px;
-    border-radius: 6px;
-    display: block;
-    margin: 15px auto;
-}
 /* ________________________________ Main Content (UNIQUE) ________________________________ */
 
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
@@ -330,7 +313,7 @@ footer {
 }
 /* ________________________________ Footer (CAN COPY AND PASTE) ________________________________ */
 
-/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
+/* ________________________________ Responsive Nav (CAN COPY AND PASTE) ________________________________ */
 @media screen and (max-width: 1024px) {
     nav {
         display: flex;
@@ -351,15 +334,14 @@ footer {
         width: 150px; 
     }
 }
-
-/* Responsive title adjustment for smaller screens */
 @media (max-width: 600px) {
     .recipe-card .recipe-name {
         font-size: 1.1em;
-        padding: 8px 50px 8px 10px; 
+        padding: 8px 50px 8px 10px;
     }
 }
-/* ________________________________ Responsive Nav for smaller screens (CAN COPY AND PASTE) ________________________________ */
+/* ________________________________ Responsive Nav (CAN COPY AND PASTE) ________________________________ */
+
 </style>
 </head>
 
@@ -377,7 +359,7 @@ footer {
                 <a href="/add_recipes">Add Recipe</a>
             </div>
         </div>
-        <a href="/favorites" style="color: #ff6f61;">Favorites</a>
+        <a href="/favorites" style="color:#ff6f61;">Favorites</a>
         <a href="/about">About Us</a>
         <a href="/faq">FAQ</a>
     </div>
@@ -398,11 +380,12 @@ footer {
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
 <main>
     <h1>Your Favorite Recipes</h1>
+
     <div id="loginPrompt" style="display:none; text-align:center;">
         <p>Please <a href="/login" style="color:#ff6f61; text-decoration:none; font-weight:500;">login</a> to view your saved recipes.</p>
     </div>
-    <div id="favoritesGrid" class="favorites-grid"></div>
 
+    <div id="favoritesGrid" class="favorites-grid"></div>
     <div id="recipeDetail"></div>
 </main>
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
@@ -415,7 +398,7 @@ footer {
 
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
 <script>
-/* 🧩 Reusable helper function (same as Browse Recipes) */
+/* Reusable helper function (same as Browse Recipes) */
 function openRecipeDetails(id) {
     window.location.href = `/show_recipe?recipe_id=${id}`;
 }
@@ -441,18 +424,34 @@ async function loadFavorites() {
             return;
         }
 
-        favData.recipes.forEach(recipe => {
+        /* STEP 1: Fetch full recipe info to get owner username */
+        const fullRecipes = [];
+        for (let recipe of favData.recipes) {
+            const info = await fetch(`/get_recipe/${recipe.recipe_id}`);
+            const full = await info.json();
+            fullRecipes.push(full.recipe);
+        }
+
+        /* STEP 2: Render full cards (IDENTICAL to browse) */
+        fullRecipes.forEach(recipe => {
+            const creator = recipe.owner || "Anonymous";
+
             const card = document.createElement('div');
             card.classList.add('recipe-card');
+
             card.innerHTML = `
                 <div class="image-container">
                     ${recipe.image_location ? `<img src="/static/uploads/recipes/${recipe.image_location}" alt="${recipe.name}" style="width:100%; height:100%; object-fit:cover;">`
                                    : `<div class="placeholder-text">No image available</div>`}
+
                     <div class="recipe-name">
                         ${recipe.name}
+                        <span class="recipe-owner">(by ${creator})</span>
+
                         <div class="no-click-zone"></div>
                         <span class="favorite-star" title="Remove from favorites"></span>
                     </div>
+
                     <div class="recipe-info">
                         <div class="row">
                             <span><strong>Prep Time:</strong> ${recipe.prep_time || 'N/A'}</span>
@@ -466,7 +465,7 @@ async function loadFavorites() {
                 </div>
             `;
 
-            // Star click - only removes favorite, doesn't open recipe
+            /* Click star to remove */
             const star = card.querySelector('.favorite-star');
             star.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -485,24 +484,19 @@ async function loadFavorites() {
                 }
             });
 
-            // Prevent clicks in no-click zone from opening recipe
             const noClickZone = card.querySelector('.no-click-zone');
-            noClickZone.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
+            noClickZone.addEventListener('click', (e) => e.stopPropagation());
 
-            // Only clicking outside star and no-click zone redirects to recipe details page
             card.addEventListener('click', (e) => {
-                if (
-                    !e.target.classList.contains('favorite-star') &&
-                    !e.target.classList.contains('no-click-zone')
-                ) {
+                if (!e.target.classList.contains('favorite-star') &&
+                    !e.target.classList.contains('no-click-zone')) {
                     openRecipeDetails(recipe.recipe_id);
                 }
             });
 
             grid.appendChild(card);
         });
+
     } catch (err) {
         console.error('Error loading favorites:', err);
     }
@@ -511,5 +505,6 @@ async function loadFavorites() {
 loadFavorites();
 </script>
 <!-- ________________________________ JS (UNIQUE) ________________________________ -->
+
 </body>
 </html>

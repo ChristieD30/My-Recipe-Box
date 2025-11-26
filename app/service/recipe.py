@@ -40,7 +40,18 @@ class RecipeService:
         return None
 
     @staticmethod
-    def add_recipe(name, ingredients, instructions, category, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, image_location=None):
+    def add_recipe(
+        name, 
+        ingredients, 
+        instructions, 
+        category, 
+        user_id=None, 
+        prep_time=None, 
+        cook_time=None, 
+        total_time=None, 
+        servings=None, 
+        image_location=None
+    ):
         try:
             # Check if the recipe already exists for the user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -70,6 +81,7 @@ class RecipeService:
 
             message = f"Your recipe '{name}' is added."
             return new_recipe, message
+
         except Exception as e:
             db.session.rollback()
             print(f"Error adding recipe: {str(e)}")
@@ -84,7 +96,20 @@ class RecipeService:
         }
 
     @staticmethod
-    def update_recipe_as_duplicate(_id, _name=None, _ingredients=None, _instructions=None, user_id=None, prep_time=None, cook_time=None, total_time=None, servings=None, _category=None, user_full_name=None, _image_location=None):
+    def update_recipe_as_duplicate(
+        _id,
+        _name=None,
+        _ingredients=None,
+        _instructions=None,
+        user_id=None,
+        prep_time=None,
+        cook_time=None,
+        total_time=None,
+        servings=None,
+        _category=None,
+        user_full_name=None,
+        _image_location=None
+    ):
         try:
             # Fetch original recipe
             original = Recipe.query.filter_by(id=_id).first()
@@ -92,11 +117,22 @@ class RecipeService:
                 return None, "Unable to duplicate recipe."
 
             # Duplicate fields
-            name = original.name
-            category = _category or original.category
+            # If caller supplies a new name, use it; otherwise keep original
+            name = _name or original.name
+            category = _category or original.category   # <-- FIXED BUG
             ingredients = _ingredients or original.ingredients
             instructions = _instructions or original.instructions
             image_location = _image_location or original.image_location
+
+            # If caller didn't provide times, fall back to original values
+            if prep_time is None:
+                prep_time = original.prep_time
+            if cook_time is None:
+                cook_time = original.cook_time
+            if total_time is None:
+                total_time = original.total_time
+            if servings is None:
+                servings = original.servings
 
             # Prevent duplicate name for same user
             existing = Recipe.query.filter_by(name=name, user_id=user_id).first()
@@ -161,12 +197,25 @@ class RecipeService:
             return None, "No recipes found."
 
     @staticmethod
-    def update_recipe(recipe_id, name=None, ingredients=None, instructions=None, category=None, user_id=None, image_location=None):
+    def update_recipe(
+        recipe_id,
+        name=None,
+        ingredients=None,
+        instructions=None,
+        category=None,
+        user_id=None,
+        image_location=None,
+        prep_time=None,
+        cook_time=None,
+        total_time=None,
+        servings=None
+    ):
         try:
             # Ensure the recipe exists and is owned by the provided user_id
             recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first()
             if not recipe:
                 return None, "Recipe not found or you do not have permission to update it."
+
             # Update fields when provided
             if name:
                 # Check for name uniqueness for this user
@@ -188,6 +237,16 @@ class RecipeService:
                 if category not in [cat.value for cat in Category]:
                     return None, f"Invalid category. Valid categories are: {[cat.value for cat in Category]}"
                 recipe.category = category
+
+            # NEW: time + servings fields
+            if prep_time is not None:
+                recipe.prep_time = prep_time
+            if cook_time is not None:
+                recipe.cook_time = cook_time
+            if total_time is not None:
+                recipe.total_time = total_time
+            if servings is not None:
+                recipe.servings = servings
 
             recipe.updated_at = datetime.utcnow()
             db.session.commit()

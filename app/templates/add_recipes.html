@@ -376,7 +376,7 @@ footer {
 
             <div>
                 <label for="name">Recipe Name:</label>
-                <input type="text" id="name" name="name" required readonly> <!-- make it readonly -->
+                <input type="text" id="name" name="name" required>
             </div>
             <div>
                 <label for="ingredients">Ingredients:</label>
@@ -384,28 +384,28 @@ footer {
             </div>
 
             <!-- Added Timing and Servings Section -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
                 <div>
-                    <label for="prep_time">Prep Time:</label>
-                    <input type="number" id="prep_time" name="prep_time" min="0" placeholder="e.g. 15 mins" required>
+                    <label for="prep_time">Prep Time (mins):</label>
+                    <input type="number" id="prep_time" name="prep_time" min="0" placeholder="15" required>
                 </div>
                 <div>
-                    <label for="cook_time">Cook Time:</label>
-                    <input type="number" id="cook_time" name="cook_time" min="0" placeholder="e.g. 30 mins" required>
+                    <label for="cook_time">Cook Time (mins):</label>
+                    <input type="number" id="cook_time" name="cook_time" min="0" placeholder="30" required>
                 </div>
                 <div>
-                    <label for="total_time">Total Time:</label>
-                    <input type="number" id="total_time" name="total_time" min="0" placeholder="e.g. 45 mins" required>
+                    <label for="total_time">Total Time (mins):</label>
+                    <input type="number" id="total_time" name="total_time" min="0" placeholder="45" required>
                 </div>
                 <div>
                     <label for="servings">Servings:</label>
-                    <input type="number" id="servings" name="servings" min="1" placeholder="e.g. 4 mins" required>
+                    <input type="number" id="servings" name="servings" min="1" placeholder="4" required>
                 </div>
             </div>
 
             <div>
                 <label for="category">Category:</label>
-                <select id="category" name="category">
+                <select id="category" name="category" required>
                     <option value="Breakfast">Breakfast</option>
                     <option value="Lunch">Lunch</option>
                     <option value="Dinner">Dinner</option>
