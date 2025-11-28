@@ -321,19 +321,73 @@ footer {
 <!-- ________________________________ Nav Bar (CAN COPY AND PASTE) ________________________________ -->
 
 <!-- ________________________________ Main Content (UNIQUE) ________________________________ -->
-<!-- Main content layout for homepage and recipe submission -->
 <main>
-    <h1>Welcome to My Recipe Box!</h1>
 
-    <!-- User info display -->
-    <div id="userInfo" style="display: none;">
-        <span id="welcomeMessage"></span>
+    <!-- Hero Section -->
+    <section style="text-align: center; max-width: 800px; margin-bottom: 25px;">
+        <h1 style="font-size: 2.2em; margin-bottom: 10px;">Welcome to My Recipe Box!</h1>
+        <p style="font-size: 1.15em; color: #555;">
+            Your personal place to save, organize, and discover recipes you’ll love. <br>  
+            Explore new dishes, keep your favorites handy, and share your cooking inspiration.
+        </p>
+
+    <!-- Quick Links Grid -->
+    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; width: 100%; max-width: 1000px; margin-top: 40px;">
+
+        <a href="/browse_recipes" style="text-decoration: none; color: inherit;">
+            <div style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); text-align: center; transition: transform .2s;">
+                <h2 style="color: #ff6f61; margin-bottom: 10px;">Browse Recipes</h2>
+                <p style="color: #555;">Explore meals, desserts, and everything in between.</p>
+            </div>
+        </a>
+
+        <a href="/featured" style="text-decoration: none; color: inherit;">
+            <div style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); text-align: center; transition: transform .2s;">
+                <h2 style="color: #ff6f61; margin-bottom: 10px;">Featured Recipes</h2>
+                <p style="color: #555;">Feeling adventurous? Try a random recipe now!</p>
+            </div>
+        </a>
+
+        <a href="/add_recipes" style="text-decoration: none; color: inherit;">
+            <div style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); text-align: center; transition: transform .2s;">
+                <h2 style="color: #ff6f61; margin-bottom: 10px;">Add a Recipe</h2>
+                <p style="color: #555;">Share your own creations with the community.</p>
+            </div>
+        </a>
+
+    </section>
+
+    <!-- Fun Food Fact -->
+    <section style="max-width: 800px; width: 100%; margin-top: 40px; text-align: center;">
+        <p style="font-size: 1.05em; color: #555;">
+            <strong>Fun Food Fact:</strong> Honey never spoils. Archaeologists found 3,000-year-old honey still perfectly edible.
+        </p>
+    </section>
+
+    <!-- Tagline Below Grid -->
+    <section style="max-width: 800px; width: 100%; margin-top: 50px; text-align: center;">
+        <hr style="border: none; border-top: 1px solid #ddd; margin-bottom: 20px;">
+        <p style="font-size: 1.2em; color: #666; font-weight: 500; letter-spacing: 1.5px;">
+            COOK • SAVE • SHARE • REPEAT
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 20px;">
+    </section>
+
+    <!-- Login or User Info -->
+    <div id="userInfo" style="display: none; margin-top: 40px; text-align: center;">
+        <span id="welcomeMessage" style="font-size: 1.2em; font-weight: 500;"></span>
+        <br><br>
         <button onclick="logout()" class="logout-btn">Logout</button>
     </div>
 
-    <!-- Login prompt if user not logged in -->
-    <div id="loginPrompt" style="display: none;">
-        <p>Please <a href="/login" style="color: #ff6f61; text-decoration: none; font-weight: 500;">login</a> to add recipes and access all features.</p>
+    <div id="loginPrompt" style="display: none; margin-top: 40px; text-align: center;">
+        <p>
+            Please 
+            <a href="/login" style="color: #ff6f61; font-weight: 500; text-decoration: none;">login</a>
+            or 
+            <a href="/signup" style="color: #ff6f61; font-weight: 500; text-decoration: none;">create an account</a> 
+            to add and save your favorite recipes.
+        </p>
     </div>
 
 </main>
