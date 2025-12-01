@@ -10,7 +10,7 @@ from pathlib import Path
 # Initialize extensions
 db = SQLAlchemy()
 
-def create_app():
+def create_app(database_uri=None):
     app = Flask(__name__)
 
     # Add secret key for sessions
@@ -21,9 +21,14 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
 
     # Configure the SQLite database
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    db_path = os.path.join(basedir, '..', 'recipe_box.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    if database_uri:
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+    else:
+        # Default to production database
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        db_path = os.path.join(basedir, '..', 'recipe_box.db')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize SQLAlchemy with the app

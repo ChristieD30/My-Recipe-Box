@@ -6,15 +6,15 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 from app import create_app, db
-from app.service.user import RecipeService
-from app.model.users import Recipe
+from app.service.recipe import RecipeService
+from app.model.recipes import Recipe
 
-class TestUserService(unittest.TestCase):
+class TestRecipeService(unittest.TestCase):
     def setUp(self):
         """Run before each test"""
-        self.app = create_app()
+        # Use in-memory database for tests
+        self.app = create_app(database_uri='sqlite:///:memory:')
         self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # Use in-memory DB for tests
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
@@ -28,15 +28,16 @@ class TestUserService(unittest.TestCase):
 
     def test_add_recipe_success(self):
         """Test successful recipe creation"""
+        recipe_name = 'Test Recipe'
         result, message = RecipeService.add_recipe(
-            name='Test Recipe',
+            name=recipe_name,
             ingredients='Ingredient1, Ingredient2',
             instructions='Step 1, Step 2',
             category='Dessert',
             user_id=1
         )
         self.assertIsNotNone(result)
-        self.assertEqual(message, "Recipe added successfully.")
+        self.assertEqual(message, f"Your recipe '{recipe_name}' is added.")
         
         recipe = Recipe.query.filter_by(name='Test Recipe').first()
         self.assertIsNotNone(recipe)

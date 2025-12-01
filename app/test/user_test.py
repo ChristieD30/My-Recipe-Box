@@ -12,9 +12,9 @@ from app.model.users import User
 class TestUserService(unittest.TestCase):
     def setUp(self):
         """Run before each test"""
-        self.app = create_app()
+        # Use in-memory database for tests
+        self.app = create_app(database_uri='sqlite:///:memory:')
         self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # Use in-memory DB for tests
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()

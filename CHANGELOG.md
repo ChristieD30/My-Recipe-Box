@@ -5,13 +5,31 @@ All notable changes to My Recipe Box will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] - 2025-11-30
 
-### Planned for v2.0.0
-- Enhanced frontend user interface
-- Improved user experience
-- Advanced styling and responsive design
-- Additional frontend features
+### Added
+- **Enhanced Testing Framework** with comprehensive unit tests
+- Database isolation for tests using in-memory SQLite
+- **GitHub Actions CI/CD Pipeline** for automated testing
+- Test coverage for Recipe, User, and Favorites services
+- **Image Upload Functionality** with file validation and storage
+- Recipe image display across all pages (browse, search, favorites)
+- **Form Input Improvements** with editable recipe name fields
+
+### Changed
+- **Improved Recipe Management** with image upload capabilities
+- Enhanced browse recipes page with proper image display
+- Fixed form field configurations (recipe name now editable)
+- **Database Configuration** with parameterized database paths for testing
+- Updated GitHub Actions workflow for test automation
+- **Service Layer Improvements** with corrected image path handling
+- Enhanced error handling and validation throughout application
+
+### Fixed
+- **Image Upload and Display Issues** across all templates
+- Recipe form readonly field problems preventing name input
+- **Database Test Isolation** ensuring tests don't affect 
+
 
 ## [1.2.0] - 2024-11-01
 
