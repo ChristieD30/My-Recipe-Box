@@ -1,112 +1,65 @@
-import os
+import unittest
 import sys
-import tempfile
+import os
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, project_root)
+# Add the project root to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from app import db, create_app
+from app import create_app, db
 from app.service.user import UserService
 from app.model.users import User
 
-print("Import successful!")
-
-db_fd, db_path = tempfile.mkstemp()
-
-app = create_app()
-app.app_context().push()
-
-app.config['TESTING'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
-
-with app.app_context():
-    db.create_all()
-
-# Ensure admin user exists
-def ensure_admin_user():
-    admin = User.query.filter_by(username='admin').first()
-    if not admin:
-        print("Admin user not found. Creating one...")
-        UserService.add_user('admin', 'admin@example.com', 'Admin User', 'securepassword')
-        db.session.commit()
-    else:
-        print("Admin user already exists.")
-
-ensure_admin_user()
-
-# Add test users
-def test_add_user():
-    print("\nTest: Add user")
-    result = UserService.add_user('testuser', 'test@example.com', 'Test User', 'password123')
-    print("Add 1:", result)
-
-    result2 = UserService.add_user('anotheruser', 'test@example.com', 'Another User', 'pass')
-    print("Add 2 (duplicate email):", result2)
-
-    result3 = UserService.add_user('testuser', 'unique@example.com', 'Unique User', 'pass')
-    print("Add 3 (duplicate username):", result3)
-
-# Test authentication
-def test_authenticate():
-    print("\nTest: Authenticate")
-    user = UserService.authenticate('testuser', 'password123')
-    print("Authenticated:", user.username if user else "Failed")
-
-    user_fail = UserService.authenticate('testuser', 'wrongpass')
-    print("Authenticated with wrong password:", user_fail)
-
-# Test delete and reset operations
-def test_delete_reset():
-    print("\nTest: Delete user")
-    print(UserService.delete_user(1))
-
-    print("\nTest: Reset password")
-    print(UserService.reset_password(1, 'newpass'))
-
-# cleanup: only delete known test users (not admin)
-def clear_user_data():
-    print("\nCleaning up test users...")
-    test_usernames = ['testuser', 'anotheruser']
-
-    users_to_delete = User.query.filter(User.username.in_(test_usernames)).all()
-    for user in users_to_delete:
-        print(f"Deleting test user: {user.username}")
-        db.session.delete(user)
-
-    db.session.commit()
-
-# Check admin user still exists
-def verify_admin_user_exists():
-    print("\nVerifying admin user still exists...")
-    admin_user = User.query.filter_by(username='admin').first()
-    if admin_user:
-        print("Admin user is safe:", admin_user.username)
-    else:
-        print("ERROR: Admin user is missing!")
-
-# Debug: List all users in database
-def list_all_users():
-    print("\nAll users currently in database:")
-    users = User.query.all()
-    for user in users:
-        print(f"- {user.id}: {user.username} ({user.email})")
-
-# Run tests 
-if __name__ == "__main__":
-    try:
-        test_add_user()
-        test_authenticate()
-        test_delete_reset()
-    finally:
-        clear_user_data()
-        verify_admin_user_exists()
-        list_all_users()
+class TestUserService(unittest.TestCase):
+    def setUp(self):
+        """Run before each test"""
+        self.app = create_app()
+        self.app.config['TESTING'] = True
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # Use in-memory DB for tests
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all()
+    
+    def tearDown(self):
+        """Run after each test"""
         db.session.remove()
         db.drop_all()
-        os.close(db_fd)
-        os.unlink(db_path)       
-
-
-
-
+        self.app_context.pop()
+    
+    def test_add_user_success(self):
+        """Test successful user creation"""
+        result = UserService.add_user('testuser', 'test@example.com', 'Test User', 'password123')
+        self.assertTrue(result)
         
+        user = User.query.filter_by(username='testuser').first()
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, 'test@example.com')
+    
+    def test_add_user_duplicate_email(self):
+        """Test adding user with duplicate username returns error"""
+        # Add first user
+        result1 = UserService.add_user('testuser', 'test1@example.com', 'User 1', 'pass1')
+        self.assertIsInstance(result1, User)
+        
+        # Try to add second user with same username
+        result2 = UserService.add_user('testuser', 'test2@example.com', 'User 2', 'pass2')
+        
+        # Should return error dict
+        self.assertIsInstance(result2, dict)
+        self.assertIn('error', result2)
+        self.assertIn('username is already taken', result2['error'])
+        
+    def test_authenticate_valid_user(self):
+        """Test authentication with valid credentials"""
+        UserService.add_user('testuser', 'test@example.com', 'Test User', 'password123')
+        user = UserService.authenticate('testuser', 'password123')
+        self.assertIsNotNone(user)
+        self.assertEqual(user.username, 'testuser')
+    
+    def test_authenticate_invalid_password(self):
+        """Test authentication with invalid password"""
+        UserService.add_user('testuser', 'test@example.com', 'Test User', 'password123')
+        user = UserService.authenticate('testuser', 'wrongpass')
+        self.assertIsNone(user)
+
+if __name__ == '__main__':
+    unittest.main()
