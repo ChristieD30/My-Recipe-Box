@@ -60,11 +60,12 @@ def create_tables():
     """
     cursor.execute(favorites_table_creation_query)
 
-    # Add a default admin user if it doesn't exist
+  # Add a default admin user==
     cursor.execute(
         "INSERT OR IGNORE INTO users (username, email, name, password) VALUES (?, ?, ?, ?)",
-        ('admin', 'admin@example.com', 'Admin', 'admin123')
+        ('admin', 'admin@example.com', 'Admin', 'scrypt:32768:8:1$ImKCC3K9vCSKA3gT$a8fdd3ede837279ab4a4fae89d5a0f80000eb2b2031f4834b69560dcb44e9dda04d6dfb2093a54fb445000958cf15b845569238a867e72330635321e2e420713')
     )
+
 
     # Get the admin user's ID
     cursor.execute("SELECT id FROM users WHERE username = 'admin'")
