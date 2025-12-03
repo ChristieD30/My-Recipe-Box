@@ -613,6 +613,18 @@ def create_app():
         total_time = parse_int_field(data, "total_time")
         servings = parse_int_field(data, "servings")
 
+        
+        # ADD: Handle image upload
+        image_location = None
+        if 'recipe_image' in request.files:
+            file = request.files['recipe_image']
+            if file and file.filename:
+                try:
+                    image_location = RecipeService.save_recipe_image(file)
+                except Exception as e:
+                    return jsonify({'error': f'Error uploading image: {str(e)}'}), 400
+
+
         recipe = Recipe.query.get(recipe_id)
 
         if not recipe:
@@ -627,6 +639,11 @@ def create_app():
             recipe.cook_time = cook_time
             recipe.total_time = total_time
             recipe.servings = servings
+            
+            # UPDATE: Only update image if a new one was uploaded
+            if image_location:
+                recipe.image_location = image_location
+            
             recipe.updated_at = datetime.now()
             db.session.commit()
 
