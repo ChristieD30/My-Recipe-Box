@@ -68,16 +68,22 @@ def create_app():
             return f"Error: {str(e)}"
 
     @app.route('/login', methods=['GET'])
+    # displays the login.html web page that gets the username and password
+    # Requirement # 2.7.0 - The user should be able to log in to their account
     def login_form():
         return render_template('login.html')
 
     @app.route('/add_recipe', methods=['POST'])
+    # create new recipe
+    # Requirement # 2.2.0 - The user should be able to create a new recipe
     def create_recipe():
         # Check if user is logged in
         auth_check = require_login()
         if auth_check:
             return auth_check
 
+        # upload a picture
+        # Requirement # 2.5.0 - The user should be able to upload an optional picture
         if request.content_type == 'application/json':
             data = request.get_json()
             image_location = None
@@ -132,6 +138,8 @@ def create_app():
             return jsonify({'error': str(e)}), 500
 
     @app.route('/signup')
+    # create a new account with the signup.html web page
+    # Requirement # 2.6.0 - The user should be able to sign up for a user account
     def signup():
         try:
             return render_template('signup.html')
@@ -139,6 +147,8 @@ def create_app():
             return f"Error: {str(e)}"
 
     @app.route('/add_user', methods=['POST'])
+    # adds a new user to the users table from the signup.html web page
+    # Requirement # 2.6.0 - The user should be able to sign up for a user account
     def create_user():
         if request.content_type == 'application/json':
             data = request.get_json()
@@ -175,7 +185,10 @@ def create_app():
             return jsonify({'error': str(e)}), 500
 
     @app.route('/search', methods=['GET', 'POST'])
+
     def search_recipes():
+        # search for recipes using ingredient, category, or name
+        # Requirement # 3.0.* - The app should allow searching by *
         from app.service.recipe import RecipeService
         from app.service.favorites import FavoriteService
 
@@ -189,8 +202,11 @@ def create_app():
             search_term = f"%{q.lower()}%"
             recipes_query = recipes_query.filter(
                 db.or_(
+                    # Requirement # 3.0.0 searching by ingredient
                     Recipe.ingredients.ilike(search_term),
+                    # Requirement # 3.0.1 searching by category
                     Recipe.category.ilike(search_term),
+                    # Requirement # 3.0.2 searching by name
                     Recipe.name.ilike(search_term)
                 )
             )
@@ -208,6 +224,8 @@ def create_app():
             recipe = Recipe.query.get(recipe_id)
 
             if "favorite" in request.form:
+                # toggle favorite
+                # Requirement # 2.1.0 - The user should be able to toggle favorites on and off
                 existing_fav = Favorite.query.filter_by(recipe_id=recipe_id, user_id=user_id).first()
                 if existing_fav:
                     FavoriteService.remove_favorite(recipe_id, user_id)
@@ -241,6 +259,8 @@ def create_app():
 
             return redirect(url_for("search_recipes", q=q, page=page))
 
+        # Favorite star is gold if it's a favorite, and gray if it's not
+        # determined by looking in the favorites table
         is_favorite = False
         if recipe and user_id:
             from app.model.favorites import Favorite
@@ -255,7 +275,10 @@ def create_app():
         )
 
     @app.route('/login', methods=['POST'])
+
     def login():
+        # posts username and password entered from the login.html web page
+        # Requirement # 2.7.0 - The user should be able to log in to their account
         if request.content_type == 'application/json':
             data = request.get_json()
         else:
@@ -297,11 +320,14 @@ def create_app():
         }), 401
 
     @app.route('/logout', methods=['POST'])
+    # logs out of the website and clears the users session
+    # Requirement # 2.7.1 - The user should be able to log out of their account
     def logout():
         session.clear()
         return jsonify({'message': 'Logged out successfully'}), 200
 
     @app.route('/current_user', methods=['GET'])
+    # helper to get logged in user's session information
     def current_user():
         if 'logged_in' in session and session['logged_in']:
             return jsonify({
@@ -314,6 +340,8 @@ def create_app():
         return jsonify({'logged_in': False}), 200
 
     @app.route('/random_recipe', methods=['GET'])
+    # used by featured.html to show random recipe of the day
+    # Requirement # 1.3.0 - The app should show a “Random Recipe of the Day”
     def get_random_recipe():
         from app.service.recipe import RecipeService
 
@@ -343,6 +371,8 @@ def create_app():
         return jsonify({'error': message}), 404
 
     @app.route('/about')
+    # Displays About Us page
+    # Requirement 4.0.0 - The user should be able to view an “About Us” page
     def about():
         try:
             return render_template('about_us.html')
@@ -350,6 +380,8 @@ def create_app():
             return f"Error loading About Us page: {str(e)}"
 
     @app.route('/add_recipes')
+    # Diplays web page for adding a new recipe
+    # Requirement # 2.2.0 - The user should be able to create a new recipe
     def add_recipes():
         try:
             return render_template('add_recipes.html')
@@ -357,6 +389,9 @@ def create_app():
             return f"Error loading Add Recipes page: {str(e)}"
 
     @app.route('/browse_recipes')
+    # Displays a listing of recipes
+    # Fetches the list with the /browse_recipes_list endpoint within the browse_recipes.html page
+    # Requirement # 1.0.1 - The app should be able to display a listing of recipes
     def browse_recipes():
         try:
             return render_template('browse_recipes.html')
@@ -364,6 +399,8 @@ def create_app():
             return f"Error loading Browse Recipes page: {str(e)}"
 
     @app.route('/faq')
+    # Diplays a Frequently Asked Questions page
+    # Requirement # 4.1.0 - The user should be able to find help with a Frequently Asked Questions (FAQ) page
     def faq():
         try:
             return render_template('faq.html')
@@ -371,6 +408,8 @@ def create_app():
             return f"Error loading FAQ page: {str(e)}"   # <-- FIXED missing quote
 
     @app.route('/favorites')
+    # Displays the favorites page
+    # Requirement # 2.0.0 - The app should be able to display a Favorites page
     def favorites():
         try:
             return render_template('favorites.html')
@@ -378,6 +417,8 @@ def create_app():
             return f"Error loading Favorites page: {str(e)}"
 
     @app.route('/featured')
+    # uses featured.html to show random recipe of the day
+    # Requirement # 1.3.0 - The app should show a “Random Recipe of the Day”
     def featured():
         from app.model.recipes import Recipe
         from app import db
@@ -386,6 +427,7 @@ def create_app():
         return render_template('featured.html', recipe=recipe)
 
     @app.route('/is_favorite/<int:recipe_id>', methods=['GET'])
+    # Helper to look up if a recipe given by recipe_id is paired with the current user in the favorites table
     def is_favorite(recipe_id):
         if 'logged_in' not in session or not session['logged_in']:
             return jsonify({'is_favorite': False}), 200
@@ -396,6 +438,8 @@ def create_app():
         return jsonify({'is_favorite': is_fav}), 200
 
     @app.route('/remove_favorite', methods=['POST'])
+    # Helper to remove a recipe given by recipe_id if it is paired with the current user in the favorites table
+    # Requirement # 2.1.0 - The user should be able to toggle favorites on and off (the off part)
     def remove_favorite():
         if 'logged_in' not in session or not session['logged_in']:
             return jsonify({'error': 'Login required'}), 401
@@ -409,6 +453,8 @@ def create_app():
         return jsonify({'message': 'Favorite removed', 'recipe_id': recipe_id}), 200
 
     @app.route('/add_favorite', methods=['POST'])
+    # Helper to add a recipe given by recipe_id and pair it with the current user in the favorites table
+    # Requirement # 2.1.0 - The user should be able to toggle favorites on and off (the on part)
     def add_favorite():
         if 'logged_in' not in session or not session['logged_in']:
             return jsonify({'error': 'Login required'}), 401
@@ -453,6 +499,7 @@ def create_app():
         return jsonify({'error': 'Recipe not found'}), 404
 
     @app.route('/favorites_list', methods=['GET'])
+    #Helper used by browse_recipes.html, favorites.html, and search_results.html to get a list of favorites
     def favorites_list():
         if 'logged_in' not in session or not session['logged_in']:
             return jsonify({'error': 'Login required'}), 401
@@ -481,9 +528,12 @@ def create_app():
         return jsonify({'recipes': recipe_list}), 200
 
     @app.route('/browse_recipes_list', methods=['GET'])
+    # Fetches a listing of recipes for the browse_recipes endpoint, to be displayed on the browse_recipes.html page
+    # Requirement # 1.0.1 - The app should be able to display a listing of recipes
     def browse_recipes_list():
         from app.model.recipes import Recipe
         from app.model.users import User
+        # Requirement # 1.2.0 - The app should be able to organize recipes by category
         category = request.args.get('category', None)
 
         query = Recipe.query
@@ -541,6 +591,9 @@ def create_app():
         })
 
     @app.route('/show_recipe')
+    # displays a single, editable recipe on a page
+    # the recipe shown is based on the recipe_id
+    # Requirement # 1.0.0 - The app should be able to display a single, editable recipe
     def show_recipe():
         recipe_id = request.args.get("recipe_id", type=int)
 
@@ -558,6 +611,8 @@ def create_app():
         return render_template('show_recipe.html', recipe=recipe, username=username)
 
     @app.route('/get_recipe/<int:recipe_id>', methods=['GET'])
+    # Helper to get data from the recipes table based on recipe_id
+    # Used by add_recipes.html, favorites.html, and show_recipe.html web pages
     def get_recipe(recipe_id):
         from app.model.recipes import Recipe
         from app.model.users import User
@@ -591,6 +646,8 @@ def create_app():
         }), 200
 
     @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
+    # Used to update an existing recipe given by recipe_id if owned by the current user
+    # Requirement # 2.3.0 - The user should be able to edit their own recipe
     def update_recipe(recipe_id):
         from app.service.recipe import RecipeService
         from app import db
@@ -615,6 +672,7 @@ def create_app():
 
         
         # ADD: Handle image upload
+        # Requirement # 2.5.0 - The user should be able to upload an optional picture
         image_location = None
         if 'recipe_image' in request.files:
             file = request.files['recipe_image']
@@ -649,6 +707,8 @@ def create_app():
 
             return jsonify({'success': True, 'recipe_id': recipe.id}), 200
 
+        # If the recipe is not owned by the user, create an editable copy
+        # Requirement # 2.4.0 - The user should be able to edit a copy of another user’s recipe
         forked, msg = RecipeService.update_recipe_as_duplicate(
             _id=recipe_id,
             _name=name,
