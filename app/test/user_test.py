@@ -26,7 +26,7 @@ class TestUserService(unittest.TestCase):
         self.app_context.pop()
     
     def test_add_user_success(self):
-        """Test successful user creation"""
+        """Test Case No. 42 - Test successful user creation"""
         result = UserService.add_user('testuser', 'test@example.com', 'Test User', 'password123')
         self.assertTrue(result)
         
@@ -35,7 +35,7 @@ class TestUserService(unittest.TestCase):
         self.assertEqual(user.email, 'test@example.com')
     
     def test_add_user_duplicate_email(self):
-        """Test adding user with duplicate username returns error"""
+        """Test Case No. 43 - Test adding user with duplicate username returns error"""
         # Add first user
         result1 = UserService.add_user('testuser', 'test1@example.com', 'User 1', 'pass1')
         self.assertIsInstance(result1, User)
@@ -49,14 +49,14 @@ class TestUserService(unittest.TestCase):
         self.assertIn('username is already taken', result2['error'])
         
     def test_authenticate_valid_user(self):
-        """Test authentication with valid credentials"""
+        """Test Case No. 44 - Test authentication with valid credentials"""
         UserService.add_user('testuser', 'test@example.com', 'Test User', 'password123')
         user = UserService.authenticate('testuser', 'password123')
         self.assertIsNotNone(user)
         self.assertEqual(user.username, 'testuser')
     
     def test_authenticate_invalid_password(self):
-        """Test authentication with invalid password"""
+        """Test Case No. 45 - Test authentication with invalid password"""
         UserService.add_user('testuser', 'test@example.com', 'Test User', 'password123')
         user = UserService.authenticate('testuser', 'wrongpass')
         self.assertIsNone(user)

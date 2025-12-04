@@ -5,8 +5,26 @@ Create the database tables for the recipe box application
 import sqlite3
 from datetime import datetime
 from app.enums import Category
+import os
 
-def create_tables():
+def create_tables(db_path=None):
+    """
+    Create the database tables, and seed data to the table
+    
+    Args: db_path (str): Path to the SQLite database file.
+    
+    If db_path is None, defaults to 'recipe_box.db'
+    
+    """
+
+    if db_path is None:
+        db_path = 'recipe_box.db'
+    
+    # Ensure directory exists for the database file
+    db_dir = os.path.dirname(db_path)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir)   
+
     conn = sqlite3.connect('recipe_box.db')
     cursor = conn.cursor()
     cursor.execute("PRAGMA foreign_keys = ON;")
