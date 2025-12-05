@@ -1,7 +1,52 @@
+
 # My-Recipe-Box
 Digital Recipe Organizer 
 
-## How to run
+## Local Development
+
+Quick steps to run the app locally and execute tests.
+
+### Prerequisites
+- Python 3.8+ installed.
+- Recommended: create and activate a virtual environment.
+
+### Setup
+```bash
+# From the project root
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Initialize the local database (first run)
+```bash
+# Optional: create tables and seed data
+python3 table_creation.py --db_path app.db
+```
+
+### Run the application
+```bash
+python3 run.py
+```
+
+- The app starts on `http://127.0.0.1:5000` (aka `http://localhost:5000`).
+- Visit the homepage, browse recipes, sign up, and test search/favorites.
+
+### Run tests
+```bash
+# Run entire test suite
+python3 -m unittest
+
+# Or run a specific test file
+python3 -m unittest app.test.route_test
+
+# Or a specific test class
+python3 -m unittest app.test.recipe_test.TestRecipeService
+```
+
+### Tips
+- If you switch Python versions, recreate the virtual environment and reinstall requirements.
+- To reset the local DB, delete `app.db` and re-run `table_creation.py`.
 
 # My Recipe Box
 
