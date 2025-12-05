@@ -25,12 +25,13 @@ class TestRealDatabaseRequirements(unittest.TestCase):
         print(f"Creating test database at: {cls.test_db_path}")
         
         # Create database with actual seed data using table_creation.py script
-        success = create_tables(cls.test_db_path)
-        if not success:
-            raise Exception("Failed to create test database")
+        try:
+            create_tables(cls.test_db_path)
+        except Exception as e:
+            raise Exception(f"Failed to create test database: {e}")
         
         # Set up Flask app to use test database
-        cls.app = create_app(db_uri=f'sqlite:///{cls.test_db_path}')
+        cls.app = create_app(database_uri=f'sqlite:///{cls.test_db_path}')
         cls.app.config.update({
             'TESTING': True,
             'WTF_CSRF_ENABLED': False,
@@ -39,6 +40,12 @@ class TestRealDatabaseRequirements(unittest.TestCase):
         
         cls.app_context = cls.app.app_context()
         cls.app_context.push()
+        
+        # Import models to ensure they're registered with SQLAlchemy
+        with cls.app.app_context():
+            from app.model.recipes import Recipe
+            from app.model.users import User
+            from app.model.favorites import Favorite
         
         # Create test client
         cls.client = cls.app.test_client()
@@ -59,7 +66,7 @@ class TestRealDatabaseRequirements(unittest.TestCase):
     # ==========================================
     
     def test_database_has_preloaded_recipes(self):
-        """Test Case No. 1 - Test 1.1.0: Database contains prepopulated recipes"""
+        """Test Case No. 19 - Database contains prepopulated recipes"""
         with self.app.app_context():
             recipe_count = Recipe.query.count()
             
@@ -70,7 +77,7 @@ class TestRealDatabaseRequirements(unittest.TestCase):
             print(f"✅ Database contains {recipe_count} preloaded recipes")
     
     def test_seed_recipes_quality(self):
-        """Test Case No. 2 - Test 1.1.0: Seed recipes have complete and realistic data"""
+        """Test Case No. 20 - Seed recipes have complete and realistic data"""
         with self.app.app_context():
             recipes = Recipe.query.all()
             
@@ -99,7 +106,7 @@ class TestRealDatabaseRequirements(unittest.TestCase):
             print(f"✅ All {len(recipes)} recipes have complete data")
     
     def test_recipes_organized_by_category(self):
-        """Test Case No. 3 - Test 1.2.0: Recipes are organized by category"""
+        """Test Case No. 21 - Recipes are organized by category"""
         with self.app.app_context():
             # Get all categories from your actual data
             all_recipes = Recipe.query.all()
