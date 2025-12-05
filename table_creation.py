@@ -90,6 +90,7 @@ def create_tables(db_path=None):
     admin_id = cursor.fetchone()[0]
 
     default_recipes = [
+    # Requirement # 1.1.0 - The database should be prepopulated with recipes
     # -------------------
     # BREAKFAST (5)
         (
