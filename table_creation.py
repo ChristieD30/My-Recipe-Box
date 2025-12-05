@@ -25,7 +25,7 @@ def create_tables(db_path=None):
     if db_dir and not os.path.exists(db_dir):
         os.makedirs(db_dir)   
 
-    conn = sqlite3.connect('recipe_box.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("PRAGMA foreign_keys = ON;")
 

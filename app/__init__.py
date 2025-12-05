@@ -10,7 +10,7 @@ from pathlib import Path
 # Initialize extensions
 db = SQLAlchemy()
 
-def create_app():
+def create_app(database_uri=None):
     app = Flask(__name__)
 
     # Add secret key for sessions
@@ -21,9 +21,12 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
 
     # Configure the SQLite database
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    db_path = os.path.join(basedir, '..', 'recipe_box.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    if database_uri:
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+    else:
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        db_path = os.path.join(basedir, '..', 'recipe_box.db')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize SQLAlchemy with the app
@@ -205,7 +208,11 @@ def create_app():
                 return redirect(url_for("search_recipes", q=q, page=page))
 
             recipe_id = request.form.get("recipe_id")
-            recipe = Recipe.query.get(recipe_id)
+            if recipe_id:
+                recipe = Recipe.query.get(recipe_id)
+                
+                if not recipe:
+                    return redirect(url_for("search_recipes", q=q, page=page))
 
             if "favorite" in request.form:
                 existing_fav = Favorite.query.filter_by(recipe_id=recipe_id, user_id=user_id).first()
@@ -224,21 +231,7 @@ def create_app():
                     is_favorite=is_favorite
                 )
 
-            # Regular update
-            recipe.name = request.form.get("name")
-            recipe.ingredients = request.form.get("ingredients")
-            recipe.instructions = request.form.get("instructions")
-            recipe.category = request.form.get("category")
-
-            # NEW fields
-            recipe.prep_time = parse_int_field(request.form, "prep_time")
-            recipe.cook_time = parse_int_field(request.form, "cook_time")
-            recipe.total_time = parse_int_field(request.form, "total_time")
-            recipe.servings = parse_int_field(request.form, "servings")
-
-            recipe.updated_at = datetime.now().astimezone()
-            db.session.commit()
-
+            # If not a favorite action, just redirect back
             return redirect(url_for("search_recipes", q=q, page=page))
 
         is_favorite = False
@@ -422,35 +415,6 @@ def create_app():
             return jsonify({'message': 'Favorite added', 'recipe_id': recipe_id}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
-    @app.route('/all_recipe_ids', methods=['GET'])
-    def get_all_recipe_ids():
-        from app.model.recipes import Recipe
-        ids = [r.id for r in Recipe.query.all()]
-        return jsonify({'recipe_ids': ids}), 200
-
-    @app.route('/get_recipe_by_id/<int:recipe_id>', methods=['GET'])
-    def get_recipe_by_id(recipe_id):
-        from app.model.recipes import Recipe
-        recipe = Recipe.query.get(recipe_id)
-        if recipe:
-            return jsonify({
-                'recipe': {
-                    'recipe_id': recipe.id,
-                    'name': recipe.name,
-                    'ingredients': recipe.ingredients,
-                    'instructions': recipe.instructions,
-                    'user_id': recipe.user_id,
-                    'category': getattr(recipe, 'category', 'Uncategorized'),
-                    'prep_time': getattr(recipe, 'prep_time', None),
-                    'cook_time': getattr(recipe, 'cook_time', None),
-                    'total_time': getattr(recipe, 'total_time', None),
-                    'servings': getattr(recipe, 'servings', None),
-                    'image': getattr(recipe, 'image_location', None)
-                }
-            }), 200
-
-        return jsonify({'error': 'Recipe not found'}), 404
 
     @app.route('/favorites_list', methods=['GET'])
     def favorites_list():
