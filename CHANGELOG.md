@@ -5,13 +5,26 @@ All notable changes to My Recipe Box will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2025-12-05
 
-### Planned for v2.0.0
-- Enhanced frontend user interface
-- Improved user experience
-- Advanced styling and responsive design
-- Additional frontend features
+### Added
+- Requirements-to-tests mapping: `docs/requirements-to-tests.tsv` (bidirectional views).
+- Local development guide in `README.md` with setup, run, and testing instructions.
+
+### Changed
+- Consolidated and clarified search (name, ingredients, category) and filter interactions.
+- Cleaned up route definitions; removed incorrect/duplicate routes and aligned endpoints to features.
+- Documentation refreshed for local run and testing flows.
+
+### Fixed
+- Authentication flow (login/logout, registration) reliability and edge cases.
+- Favorites service logic (add/remove/is_favorite with user scoping).
+- Recipe and route tests; numbering verified sequentially 01–65.
+- Real database setup compatibility with `table_creation.py --db_path`.
+
+### Testing
+- Full suite passing: 65 tests across favorites, recipes, routes, users, and real database.
+
 
 ## [1.2.0] - 2024-11-01
 
